@@ -40,7 +40,10 @@ sqlc:
 	sqlc generate
 
 start:
-	CompileDaemon -command="./fintrax"
+	CompileDaemon -command="./goRepositoryPattern"
+
+build:
+	go build -o goRepositoryPattern
 
 test:
 	go test -v -cover ./...
