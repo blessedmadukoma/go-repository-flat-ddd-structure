@@ -33,6 +33,7 @@ func (s *AuthService) Register(ctx *gin.Context, arg validators.RegisterInput) (
 		return models.UserResponse{}, errors.New("email and password are required")
 	}
 
+	log.Println("in auth.service.register")
 	// check if user account exists
 
 	// call register repository

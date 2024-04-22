@@ -12,6 +12,8 @@ import "time"
 
 type UserResponse struct {
 	ID        int64     `json:"id"`
+	FirstName string    `json:"firstname"`
+	LastName  string    `json:"lastname"`
 	Email     string    `json:"email"`
 	Token     string    `json:"token"`
 	CreatedAt time.Time `json:"created_at"`

@@ -13,17 +13,17 @@ db/createmigration:
 	migrate create -ext sql -dir db/migrations -seq $(name)
 
 db/migrateup:
-	migrate up "$(DB_SOURCE)"
+	migrate -path database/migrations -database $(DB_SOURCE) -verbose up
 	# migrate -path db/migrations -database "$(DB_DRIVER)://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -verbose up
 
 db/migratedown:
-	# migrate down
-	migrate -path db/migrations -database "$(DB_DRIVER)://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -verbose down
+	# migrate -path database/migrations -database "$(DB_DRIVER)://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable" -verbose down
+	migrate -path database/migrations -database $(DB_SOURCE) -verbose down
 
-pg_up:
+dc_up:
 	docker compose up -d
 
-pg_down:
+dc_down:
 	docker compose down -v
 
 # db_up:

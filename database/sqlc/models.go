@@ -10,6 +10,8 @@ import (
 
 type User struct {
 	ID             int64     `json:"id"`
+	Firstname      string    `json:"firstname"`
+	Lastname       string    `json:"lastname"`
 	Email          string    `json:"email"`
 	HashedPassword string    `json:"hashed_password"`
 	CreatedAt      time.Time `json:"created_at"`

@@ -2,15 +2,18 @@ package repository
 
 import (
 	database "goRepositoryPattern/database/sqlc"
+	"goRepositoryPattern/token"
 )
 
 type Repository struct {
-	DB database.Store
+	DB    database.Store
+	Token *token.JWTToken
 }
 
-func NewRepository(db database.Store) *Repository {
+func NewRepository(db database.Store, token *token.JWTToken) *Repository {
 	return &Repository{
-		DB: db,
+		DB:    db,
+		Token: token,
 	}
 }
 

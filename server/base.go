@@ -9,6 +9,7 @@ import (
 	"goRepositoryPattern/repository"
 	"goRepositoryPattern/routes"
 	"goRepositoryPattern/services"
+	"goRepositoryPattern/token"
 	"goRepositoryPattern/util"
 
 	// "goRepositoryPattern/tasks"
@@ -18,6 +19,7 @@ import (
 )
 
 var engine *gin.Engine
+var tokenController *token.JWTToken
 
 // Initialize initiates the app instance
 func Initialize() error {
@@ -28,6 +30,8 @@ func Initialize() error {
 	if err := loadEnv(); err != nil {
 		return err
 	}
+
+	tokenController = token.NewJWTToken(&config)
 
 	// database connection
 	DB, err := database.ConnectDataBase(config)
@@ -43,7 +47,7 @@ func Initialize() error {
 
 	engine = gin.Default()
 
-	repo := repository.NewRepository(DB)
+	repo := repository.NewRepository(DB, tokenController)
 	authService := services.NewAuthService(repo)
 	userService := services.NewUserService(repo)
 

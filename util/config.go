@@ -21,6 +21,7 @@ func LoadEnvConfig() (config Config) {
 
 	config.DBDriver = os.Getenv("DB_DRIVER")
 	config.DBSource = os.Getenv("DB_SOURCE")
+	config.SIGNINGKEY = os.Getenv("TOKEN_SYMMETRIC_KEY")
 
 	return config
 }

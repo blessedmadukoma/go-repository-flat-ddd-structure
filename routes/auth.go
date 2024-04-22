@@ -6,7 +6,7 @@ func registerAuthRoute(rg *gin.RouterGroup) {
 
 	router := rg.Group("/auth")
 
-	router.POST("/register", m.Throttle(2), c.Register)
+	router.POST("/register", m.Throttle(4), c.Register)
 	router.POST("/login", m.Throttle(4), c.Login)
 
 	// router.POST("/resend-registration-otp", m.Throttle(4), c.ResendRegistrationOtp)

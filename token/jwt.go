@@ -3,6 +3,7 @@ package token
 import (
 	"fmt"
 	"goRepositoryPattern/util"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -28,10 +29,12 @@ type jwtClaim struct {
 // func (j *JWTToken) CreateToken(user_id int64) (string, error) {
 func (j *JWTToken) CreateToken(user_id int64, duration time.Duration) (string, error) {
 	claims := jwtClaim{
-		UserID: user_id,
-		// ExpiredAt: time.Now().Add(time.Minute * 15).Unix(),
-		ExpiredAt: int64(duration),
+		UserID:    user_id,
+		ExpiredAt: time.Now().Add(time.Minute * 15).Unix(),
+		// ExpiredAt: int64(duration),
 	}
+
+	log.Println("Token symmetric key:", j.config.SIGNINGKEY)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
