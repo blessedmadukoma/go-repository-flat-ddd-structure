@@ -20,22 +20,11 @@ type User struct {
 
 // Auth
 type AuthRepository interface {
-	// Register(ctx *gin.Context, email, password string) (*User, error)
-	// Login(ctx *gin.Context, email, password string) (*User, error)
-	// Register(ctx *gin.Context, arg database.CreateUserParams) (database.User, error)
 	Register(ctx *gin.Context, arg validators.RegisterInput) (models.UserResponse, error)
-	// Login(ctx *gin.Context, email, password string) (database.User, error)
 	Login(ctx *gin.Context, email, password string) (string, error)
 }
 
 func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (models.UserResponse, error) {
-	// user := database.User{
-	// 	ID:             1,
-	// 	Email:          arg.Email,
-	// 	HashedPassword: arg.Password,
-	// }
-	log.Println("in auth.repository.register")
-
 	// hash password
 	hashedPassword, err := util.HashPassword(arg.Password)
 	if err != nil {

@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log"
 	"testing"
 	"time"
 
@@ -13,15 +14,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// var tokenController *JWTToken
-// var tokenController *NewJWTToken(&utils.Config{})
 var tokenController = NewJWTToken(&util.Config{})
 
 func TestJWTMaker(t *testing.T) {
-	// userId := primitive.NewObjectID()
 	userId := int64(1)
 
-	// token, err := tokenController.CreateToken(userId, time.Minute)
 	token, err := tokenController.CreateToken(userId, time.Minute)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
@@ -34,10 +31,6 @@ func TestJWTMaker(t *testing.T) {
 }
 
 func TestExpiredJWTToken(t *testing.T) {
-	// maker, err := NewJWTMaker(util.RandomString(32))
-	// require.NoError(t, err)
-
-	// userId := primitive.NewObjectID()
 	userId := int64(1)
 
 	tokenString, err := tokenController.CreateToken(userId, -time.Minute)
@@ -45,14 +38,13 @@ func TestExpiredJWTToken(t *testing.T) {
 	require.NotEmpty(t, tokenString)
 
 	tokenValue, err := tokenController.VerifyToken(tokenString)
+	log.Println("error:", err)
 	require.Error(t, err)
-	// require.EqualError(t, err, ErrExpiredToken.Error())
 	require.EqualError(t, err, messages.ErrExpiredToken.Error())
 	require.Zero(t, tokenValue)
 }
 
 func TestInvalidJWTTokenAlgNone(t *testing.T) {
-	// userId := primitive.NewObjectID()
 	userId := int64(1)
 
 	claims := jwtClaim{
@@ -66,7 +58,6 @@ func TestInvalidJWTTokenAlgNone(t *testing.T) {
 
 	value, err := tokenController.VerifyToken(tokenString)
 	require.Error(t, err)
-	// require.EqualError(t, err, ErrInvalidToken.Error())
 	require.EqualError(t, err, messages.ErrInvalidToken.Error())
 	require.Zero(t, value)
 }

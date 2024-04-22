@@ -1,9 +1,8 @@
 package token
 
 import (
-	"fmt"
+	"goRepositoryPattern/messages"
 	"goRepositoryPattern/util"
-	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -29,12 +28,10 @@ type jwtClaim struct {
 // func (j *JWTToken) CreateToken(user_id int64) (string, error) {
 func (j *JWTToken) CreateToken(user_id int64, duration time.Duration) (string, error) {
 	claims := jwtClaim{
-		UserID:    user_id,
-		ExpiredAt: time.Now().Add(time.Minute * 15).Unix(),
-		// ExpiredAt: int64(duration),
+		UserID: user_id,
+		// ExpiredAt: time.Now().Add(time.Minute * 15).Unix(),
+		ExpiredAt: int64(duration),
 	}
-
-	log.Println("Token symmetric key:", j.config.SIGNINGKEY)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
@@ -51,24 +48,24 @@ func (j *JWTToken) VerifyToken(tokenString string) (int64, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &jwtClaim{}, func(token *jwt.Token) (interface{}, error) {
 
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("invalid authentication token")
+			return nil, messages.ErrInvalidToken
 		}
 
 		return []byte(j.config.SIGNINGKEY), nil
 	})
 
 	if err != nil {
-		return 0, fmt.Errorf("invalid authentication token")
+		return 0, messages.ErrInvalidToken
 	}
 
 	claims, ok := token.Claims.(*jwtClaim)
 
 	if !ok {
-		return 0, fmt.Errorf("invalid authentication token")
+		return 0, messages.ErrInvalidToken
 	}
 
 	if claims.ExpiredAt < time.Now().Unix() {
-		return 0, fmt.Errorf("token expired")
+		return 0, messages.ErrExpiredToken
 	}
 
 	return claims.UserID, nil
