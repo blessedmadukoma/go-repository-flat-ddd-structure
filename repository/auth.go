@@ -39,7 +39,7 @@ func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (m
 	// hash password
 	hashedPassword, err := util.HashPassword(arg.Password)
 	if err != nil {
-		log.Fatal("unable to hash password:", err)
+		log.Println("unable to hash password:", err)
 		return models.UserResponse{}, err
 	}
 
@@ -50,15 +50,12 @@ func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (m
 		HashedPassword: hashedPassword,
 	}
 
-	log.Println("creating user")
 	user, err := r.DB.CreateUser(ctx, args)
 	if err != nil {
 		log.Println("unable to create user:", err)
 		return models.UserResponse{}, err
 	}
 
-	log.Println("generating token")
-	// If credentials are valid, generate authentication token (you can use JWT, for example)
 	token, err := r.Token.CreateToken(user.ID, time.Minute*15)
 	// token, err := r.Token.CreateToken(user.ID)
 	if err != nil {
@@ -72,6 +69,8 @@ func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (m
 		LastName:  user.Lastname,
 		Email:     user.Email,
 		Token:     token,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}
 
 	return response, nil
