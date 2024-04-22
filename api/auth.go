@@ -3,7 +3,6 @@ package api
 import (
 	"goRepositoryPattern/messages"
 	"goRepositoryPattern/validators"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,14 +14,11 @@ func (c *Controller) Register(ctx *gin.Context) {
 	var registerArg validators.RegisterInput
 
 	if err := ctx.ShouldBindJSON(&registerArg); err != nil {
-		log.Println("error:", err.Error())
 		R.Error = append(R.Error, err.Error())
 		R.Message = messages.ValidationFailed
 		ctx.JSON(messages.Response(http.StatusUnprocessableEntity, R))
 		return
 	}
-
-	log.Println("going into authservice.register")
 
 	user, err := c.services.AuthService.Register(ctx, registerArg)
 	if err != nil {
