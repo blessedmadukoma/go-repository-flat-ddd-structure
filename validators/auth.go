@@ -1,0 +1,55 @@
+package validators
+
+// RegisterInput is for validating account creation
+type RegisterInput struct {
+	FirstName string `json:"firstname" binding:"required"`
+	LastName  string `json:"lastname" binding:"required"`
+	Email     string `json:"email" binding:"required"`
+	Password  string `json:"password" binding:"required"`
+}
+
+// LoginInput is validating account authentication
+type LoginInput struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type ResendRegistrationOtpInput struct {
+	Email string `json:"email" binding:"required"`
+}
+
+// ConfirmAccountInput for validating account confirm
+type ConfirmAccountInput struct {
+	Email string `json:"email" binding:"required"`
+	Token string `json:"token" binding:"required"`
+}
+
+// ConfirmOTPInput for validating OTP confirm
+type ConfirmOTPInput struct {
+	Phone string `json:"phone" binding:"required"`
+	Token string `json:"token" binding:"required"`
+}
+
+type PasswordResetInput struct {
+	Email string `json:"email" binding:"required"`
+}
+
+type PasswordResetConfirmInput struct {
+	Email string `json:"email" binding:"required"`
+	Token string `json:"token" binding:"required"`
+}
+
+type PasswordResetChangeInput struct {
+	Email       string `json:"email" binding:"required"`
+	Token       string `json:"token" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
+}
+
+type PasswordUpdateInput struct {
+	OldPassword string `json:"old_password" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
+}
+
+type Verify2FAOTPInput struct {
+	Token string `json:"token" binding:"required"`
+}

@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  postgresdb:
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=${DB_DOCKER_HOST}
+    ports:
+      - ${POSTGRES_PORT}:5432
+    networks:
+      - goRepositoryPattern_network
+
+  # goRepositoryPattern_api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     # - "8000:8000"
+  #     - "80:80"
+  #   depends_on:
+  #     - postgresdb
+  #     # - redis
+  #   networks:
+  #     - goRepositoryPattern_network
+
+networks:
+  goRepositoryPattern_network:
+    driver: bridge
+
+volumes:
+  postgresdb:
+  goRepositoryPattern_api:
