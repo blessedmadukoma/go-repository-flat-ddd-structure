@@ -15,7 +15,7 @@ func (c *Controller) Register(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&registerArg); err != nil {
 		R.Error = append(R.Error, err.Error())
-		R.Message = messages.ValidationFailed
+		R.Message = messages.ErrValidationFailed.Error()
 		ctx.JSON(messages.Response(http.StatusUnprocessableEntity, R))
 		return
 	}
@@ -23,7 +23,8 @@ func (c *Controller) Register(ctx *gin.Context) {
 	user, err := c.services.AuthService.Register(ctx, registerArg)
 	if err != nil {
 		R.Error = append(R.Error, err.Error())
-		R.Message = err.Error()
+		// R.Message = err.Error()
+		R.Message = messages.SomethingWentWrong
 		ctx.JSON(messages.Response(http.StatusUnauthorized, R))
 		return
 	}

@@ -21,15 +21,13 @@ func NewAuthService(repo repository.AuthRepository) AuthService {
 }
 
 func (s *AuthService) Register(ctx *gin.Context, arg validators.RegisterInput) (models.UserResponse, error) {
-	if arg.Email == "" || arg.Password == "" {
-		return models.UserResponse{}, errors.New("email and password are required")
+	// validate user input
+	if err := arg.Validate(); err != nil {
+		return models.UserResponse{}, err
 	}
-
-	// check if user account exists (I think I should do it here - handle the business logic or repository - this is only supposed to create account)
 
 	// call register repository
 	user, err := s.repo.Register(ctx, arg)
-
 	if err != nil {
 		return models.UserResponse{}, err
 	}

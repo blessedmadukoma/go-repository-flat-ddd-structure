@@ -3,6 +3,7 @@ package repository
 import (
 	"goRepositoryPattern/database/models"
 	database "goRepositoryPattern/database/sqlc"
+	"goRepositoryPattern/messages"
 	"goRepositoryPattern/util"
 	"goRepositoryPattern/validators"
 	"log"
@@ -25,10 +26,17 @@ type AuthRepository interface {
 }
 
 func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (models.UserResponse, error) {
+
+	// check if user account exists (I think I should do it here - handle the business logic or repository - this is only supposed to create account)
+	dbUser, _ := r.DB.GetUserByEmail(ctx, arg.Email)
+
+	if dbUser.ID != 0 {
+		return models.UserResponse{}, messages.ErrUserExists
+	}
+
 	// hash password
 	hashedPassword, err := util.HashPassword(arg.Password)
 	if err != nil {
-		log.Println("unable to hash password:", err)
 		return models.UserResponse{}, err
 	}
 
@@ -41,14 +49,11 @@ func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (m
 
 	user, err := r.DB.CreateUser(ctx, args)
 	if err != nil {
-		log.Println("unable to create user:", err)
 		return models.UserResponse{}, err
 	}
 
 	token, err := r.Token.CreateToken(user.ID, time.Minute*15)
-	// token, err := r.Token.CreateToken(user.ID)
 	if err != nil {
-		log.Println("unable to create token:", err)
 		return models.UserResponse{}, err
 	}
 

@@ -1,10 +1,12 @@
 package validators
 
+import _ "github.com/go-playground/validator/v10"
+
 // RegisterInput is for validating account creation
 type RegisterInput struct {
-	FirstName string `json:"firstname" binding:"required"`
-	LastName  string `json:"lastname" binding:"required"`
-	Email     string `json:"email" binding:"required"`
+	FirstName string `json:"firstname" binding:"required" validate:"required,ascii,max=128"`
+	LastName  string `json:"lastname" binding:"required" validate:"required,ascii,max=128"`
+	Email     string `json:"email" binding:"required" validate:"required,email,max=128"`
 	Password  string `json:"password" binding:"required"`
 }
 
