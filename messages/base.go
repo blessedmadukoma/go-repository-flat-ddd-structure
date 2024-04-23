@@ -13,10 +13,13 @@ var (
 	SomethingWentWrong     = "something went wrong, please contact support"
 	InvalidCredentials     = "invalid credentials"
 
-	ErrInvalidToken     = errors.New("invalid authentication token")
-	ErrExpiredToken     = errors.New("token expired")
-	ErrValidationFailed = errors.New("validation failed, please contact support")
-	ErrUserExists       = errors.New("user already exists")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrInvalidToken       = errors.New("invalid authentication token")
+	ErrInvalidPassword    = errors.New("password does not match")
+	ErrExpiredToken       = errors.New("token expired")
+	ErrValidationFailed   = errors.New("validation failed, please contact support")
+	ErrUserExists         = errors.New("user already exists")
+	ErrUserNotExists      = errors.New("user does not exist")
 )
 
 const (
