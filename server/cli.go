@@ -1,7 +1,7 @@
 package server
 
-// "github.com/astravest/engine/cmd"
-// "github.com/astravest/engine/db/seeds"
+// "github.com/goRepositoryPattern/engine/cmd"
+// "github.com/goRepositoryPattern/engine/db/seeds"
 
 func HandleArgs() {
 	// flag.Parse()

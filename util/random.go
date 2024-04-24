@@ -52,3 +52,8 @@ func RandomCurrency() string {
 func RandomEmail() string {
 	return fmt.Sprintf("%s@mailtest.com", RandomString(6))
 }
+
+// RandomOTP generates a random OTP
+func RandomOTP() string {
+	return fmt.Sprintf("%06d", RandomInt(0, 999999))
+}
