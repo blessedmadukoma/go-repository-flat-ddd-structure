@@ -2,6 +2,8 @@ package api
 
 import (
 	"goRepositoryPattern/messages"
+	"goRepositoryPattern/tasks"
+	"goRepositoryPattern/util"
 	"goRepositoryPattern/validators"
 	"net/http"
 
@@ -28,6 +30,15 @@ func (c *Controller) Register(ctx *gin.Context) {
 		ctx.JSON(messages.Response(http.StatusUnauthorized, R))
 		return
 	}
+
+	// Send email
+	go func() {
+		tasks.RegisterOtpTask(tasks.RegisterOtpInput{
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			OTP:       generateOTP(),
+		})
+	}()
 
 	R.Data = user
 
@@ -60,4 +71,8 @@ func (c *Controller) Login(ctx *gin.Context) {
 	R.Data = user
 
 	ctx.JSON(messages.Response(0, R))
+}
+
+func generateOTP() string {
+	return util.RandomOTP()
 }

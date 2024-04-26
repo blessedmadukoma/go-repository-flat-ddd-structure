@@ -2,6 +2,7 @@ version: "3"
 
 services:
   postgresdb:
+    container_name: goRepositoryPattern_postgresdb
     image: postgres:14-alpine
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
@@ -16,6 +17,7 @@ services:
       - goRepositoryPattern_network
 
   pgadmin:
+    container_name: goRepositoryPattern_pgadmin
     image: dpage/pgadmin4
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
@@ -27,6 +29,17 @@ services:
       - ${PGADMIN_PORT}:80
     networks:
       - goRepositoryPattern_network
+
+  redis:
+        container_name: goRepositoryPattern_redis
+        image: redis:latest
+        ports:
+            - '6332:6379'
+        volumes:
+            - ./other/redis:/data
+            - goRepositoryPattern_redis_data:/data
+        networks:
+          - goRepositoryPattern_network
 
   # goRepositoryPattern_api:
   #   build:
@@ -48,3 +61,4 @@ networks:
 volumes:
   postgresdb_data:
   goRepositoryPattern_api:
+  goRepositoryPattern_redis_data:

@@ -9,6 +9,7 @@ import (
 	"goRepositoryPattern/repository"
 	"goRepositoryPattern/routes"
 	"goRepositoryPattern/services"
+	"goRepositoryPattern/tasks"
 	"goRepositoryPattern/token"
 	"goRepositoryPattern/util"
 
@@ -54,11 +55,11 @@ func Initialize() error {
 	// services := services.NewService(repo)
 	services := services.NewService(authService, userService)
 
-	// go func() {
-	// 	if err := tasks.StartWorker(tasks.NewTask(repo, s)); err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// }()
+	go func() {
+		if err := tasks.StartWorker(tasks.NewTask(repo, services)); err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	// Register routes
 	routes.RegisterRoutes(engine, repo, services)

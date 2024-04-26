@@ -43,15 +43,6 @@ func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (m
 		return models.RegisterResponse{}, err
 	}
 
-	// // Send email
-	// go func() {
-	// 	tasks.RegisterOtpTask(tasks.RegisterOtpInput{
-	// 		Email:     user.Email,
-	// 		FirstName: user.Firstname,
-	// 		OTP:       generateOTP(),
-	// 	})
-	// }()
-
 	response := models.RegisterResponse{
 		ID:        user.ID,
 		FirstName: user.Firstname,
@@ -97,8 +88,4 @@ func (r *Repository) Login(ctx *gin.Context, arg validators.LoginInput) (models.
 	}
 
 	return response, nil
-}
-
-func generateOTP() string {
-	return util.RandomOTP()
 }
