@@ -67,15 +67,6 @@ func (c *Controller) Login(ctx *gin.Context) {
 		return
 	}
 
-	// Send email
-	go func() {
-		tasks.RegisterOtpTask(tasks.RegisterOtpInput{
-			Email:     user.Email,
-			FirstName: user.FirstName,
-			OTP:       generateOTP(),
-		})
-	}()
-
 	// If login is successful, return authentication token
 	R.Data = user
 
