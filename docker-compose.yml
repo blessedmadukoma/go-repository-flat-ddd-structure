@@ -31,15 +31,25 @@ services:
       - goRepositoryPattern_network
 
   redis:
-        container_name: goRepositoryPattern_redis
-        image: redis:latest
-        ports:
-            - '6332:6379'
-        volumes:
-            - ./other/redis:/data
-            - goRepositoryPattern_redis_data:/data
-        networks:
-          - goRepositoryPattern_network
+    container_name: goRepositoryPattern_redis
+    image: redis:latest
+    ports:
+        - ${REDIS_PORT}:6379
+    volumes:
+        - ./other/redis:/data
+        - goRepositoryPattern_redis_data:/data
+    networks:
+      - goRepositoryPattern_network
+
+  # redis-commander:
+  #   container_name: goRepositoryPattern_redis_commander
+  #   image: rediscommander/redis-commander:latest
+  #   environment:
+  #     - REDIS_HOSTS=local:redis:6332
+  #   ports:
+  #     - "8081:8081"
+  #   networks:
+  #     - goRepositoryPattern_network
 
   # goRepositoryPattern_api:
   #   build:
