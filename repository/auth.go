@@ -1,11 +1,13 @@
 package repository
 
 import (
+	"errors"
 	"goRepositoryPattern/database/models"
 	database "goRepositoryPattern/database/sqlc"
 	"goRepositoryPattern/messages"
 	"goRepositoryPattern/util"
 	"goRepositoryPattern/validators"
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,12 +16,13 @@ import (
 type AuthRepository interface {
 	Register(ctx *gin.Context, arg validators.RegisterInput) (models.RegisterResponse, error)
 	Login(ctx *gin.Context, arg validators.LoginInput) (models.LoginResponse, error)
+	ResendRegistrationOTP(ctx *gin.Context, arg validators.ResendRegistrationOtpInput) (models.ResendRegistrationOtpResponse, error)
 }
 
 func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (models.RegisterResponse, error) {
 
 	// check if user account exists (I think I should do it here - handle the business logic or repository - this is only supposed to create account)
-	dbUser, _ := r.DB.GetUserByEmail(ctx, arg.Email)
+	dbUser, _ := r.DB.GetAccountByEmail(ctx, arg.Email)
 
 	if dbUser.ID != 0 {
 		return models.RegisterResponse{}, messages.ErrUserExists
@@ -31,15 +34,28 @@ func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (m
 		return models.RegisterResponse{}, err
 	}
 
-	args := database.CreateUserParams{
+	args := database.CreateAccountParams{
 		Firstname:      arg.FirstName,
 		Lastname:       arg.LastName,
 		Email:          arg.Email,
 		HashedPassword: hashedPassword,
 	}
 
-	user, err := r.DB.CreateUser(ctx, args)
+	user, err := r.DB.CreateAccount(ctx, args)
 	if err != nil {
+		return models.RegisterResponse{}, err
+	}
+
+	otp := util.RandomOTP()
+
+	// store OTP
+	_, err = r.DB.CreateOtp(ctx, database.CreateOtpParams{
+		AccountID: user.ID,
+		Otp:       otp,
+		Type:      int64(messages.AccountTokenTypeEmailConfirmationKey),
+	})
+	if err != nil {
+		log.Println("unable to create OTP in db:", err)
 		return models.RegisterResponse{}, err
 	}
 
@@ -48,6 +64,7 @@ func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (m
 		FirstName: user.Firstname,
 		LastName:  user.Lastname,
 		Email:     user.Email,
+		OTP:       otp,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}
@@ -56,7 +73,7 @@ func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (m
 }
 
 func (r *Repository) Login(ctx *gin.Context, arg validators.LoginInput) (models.LoginResponse, error) {
-	user, err := r.DB.GetUserByEmail(ctx, arg.Email)
+	user, err := r.DB.GetAccountByEmail(ctx, arg.Email)
 	if err != nil {
 		return models.LoginResponse{}, messages.ErrUserNotExists
 	}
@@ -85,6 +102,54 @@ func (r *Repository) Login(ctx *gin.Context, arg validators.LoginInput) (models.
 		Token:     token,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
+	}
+
+	return response, nil
+}
+
+func (r *Repository) ResendRegistrationOTP(ctx *gin.Context, arg validators.ResendRegistrationOtpInput) (models.ResendRegistrationOtpResponse, error) {
+	a, err := r.DB.GetAccountByEmail(ctx, arg.Email)
+	if err != nil {
+		log.Println("error getting account by email:", err)
+		return models.ResendRegistrationOtpResponse{}, err
+	}
+
+	// GetOTPByTypeAndID
+	args := database.GetOtpByAccountIDAndTypeParams{
+		AccountID: a.ID,
+		Type:      int64(messages.AccountTokenTypeEmailConfirmationKey),
+	}
+
+	// Check if email is verified
+	_, err = r.DB.GetOtpByAccountIDAndType(ctx, args)
+	if err != nil {
+		// check if err is not found
+		if errors.Is(err, messages.ErrRecordNotFound) {
+			log.Println("email is already verified, no record in db:", err)
+			return models.ResendRegistrationOtpResponse{}, messages.ErrEmailIsVerified
+		}
+		log.Println("no record in db:", err)
+		return models.ResendRegistrationOtpResponse{}, err
+	}
+
+	otp := util.RandomOTP()
+
+	newOTPdata := database.UpdateOtpParams{
+		Otp:       otp,
+		AccountID: a.ID,
+		Type:      int64(messages.AccountTokenTypeEmailConfirmationKey),
+	}
+
+	_, err = r.DB.UpdateOtp(ctx, newOTPdata)
+	if err != nil {
+		log.Println("unable to update OTP table:", err)
+		return models.ResendRegistrationOtpResponse{}, err
+	}
+
+	response := models.ResendRegistrationOtpResponse{
+		FirstName: a.Firstname,
+		Email:     a.Email,
+		OTP:       otp,
 	}
 
 	return response, nil

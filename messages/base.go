@@ -12,7 +12,9 @@ var (
 	NotFound               = "not found"
 	SomethingWentWrong     = "something went wrong, please contact support"
 	InvalidCredentials     = "invalid credentials"
+	EmailIsVerified        = "email is verified, please proceed to login"
 
+	ErrEmailIsVerified    = errors.New("email is verified, please proceed to login")
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrInvalidToken       = errors.New("invalid authentication token")
 	ErrInvalidPassword    = errors.New("password does not match")

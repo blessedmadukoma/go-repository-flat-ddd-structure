@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type User struct {
+type Account struct {
 	ID             int64     `json:"id"`
 	Firstname      string    `json:"firstname"`
 	Lastname       string    `json:"lastname"`
@@ -16,4 +16,13 @@ type User struct {
 	HashedPassword string    `json:"hashed_password"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
+}
+
+type AccountOtp struct {
+	ID        int64     `json:"id"`
+	AccountID int64     `json:"account_id"`
+	Otp       string    `json:"otp"`
+	Type      int64     `json:"type"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
