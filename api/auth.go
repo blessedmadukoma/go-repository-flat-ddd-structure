@@ -3,6 +3,7 @@ package api
 import (
 	"goRepositoryPattern/messages"
 	"goRepositoryPattern/tasks"
+	"goRepositoryPattern/util"
 	"goRepositoryPattern/validators"
 	"net/http"
 
@@ -65,6 +66,15 @@ func (c *Controller) Login(ctx *gin.Context) {
 		ctx.JSON(messages.Response(http.StatusUnauthorized, R))
 		return
 	}
+
+	// Resend registration token
+	go func() {
+		tasks.RegisterOtpTask(tasks.RegisterOtpInput{
+			Email:     user.Email,
+			FirstName: user.FirstName,
+			OTP:       util.RandomOTP(),
+		})
+	}()
 
 	R.Data = user
 
