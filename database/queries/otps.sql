@@ -22,7 +22,7 @@ UPDATE account_otps SET otp = $1, updated_at = now()
 WHERE account_id = $2 AND type = $3 RETURNING *;
 
 -- name: DeleteOtp :exec
-DELETE FROM account_otps WHERE id = $1;
+DELETE FROM account_otps WHERE id = $1 AND account_id = $2 AND type = $3;
 
 -- name: DeleteAllOtps :exec
 DELETE FROM account_otps;

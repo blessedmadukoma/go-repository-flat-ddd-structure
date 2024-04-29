@@ -2,14 +2,6 @@ package models
 
 import "time"
 
-// type User struct {
-// 	ID             int64     `json:"id"`
-// 	Email          string    `json:"email"`
-// 	HashedPassword string    `json:"hashed_password"`
-// 	CreatedAt      time.Time `json:"created_at"`
-// 	UpdatedAt      time.Time `json:"updated_at"`
-// }
-
 type RegisterResponse struct {
 	ID        int64     `json:"id"`
 	FirstName string    `json:"firstname"`
@@ -34,6 +26,13 @@ type ResendRegistrationOtpResponse struct {
 	FirstName string    `json:"firstname"`
 	Email     string    `json:"email"`
 	OTP       string    `json:"otp"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type VerifyAccountResponse struct {
+	FirstName string    `json:"firstname"`
+	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

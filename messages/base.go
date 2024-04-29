@@ -16,6 +16,7 @@ var (
 
 	ErrEmailIsVerified    = errors.New("email is verified, please proceed to login")
 	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrInvalidOTP         = errors.New("invalid account OTP")
 	ErrInvalidToken       = errors.New("invalid authentication token")
 	ErrInvalidPassword    = errors.New("password does not match")
 	ErrExpiredToken       = errors.New("token expired")

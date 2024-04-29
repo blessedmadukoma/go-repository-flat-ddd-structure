@@ -7,7 +7,8 @@ package database
 
 import (
 	"context"
-	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAccount = `-- name: CreateAccount :one
@@ -16,7 +17,7 @@ INSERT INTO accounts (
   lastname,
   email,
   hashed_password
-) VALUES ($1, $2, $3, $4) RETURNING id, firstname, lastname, email, hashed_password, created_at, updated_at
+) VALUES ($1, $2, $3, $4) RETURNING id, firstname, lastname, email, is_verified, hashed_password, created_at, updated_at
 `
 
 type CreateAccountParams struct {
@@ -39,6 +40,7 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		&i.Firstname,
 		&i.Lastname,
 		&i.Email,
+		&i.IsVerified,
 		&i.HashedPassword,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -65,7 +67,7 @@ func (q *Queries) DeleteAllAccounts(ctx context.Context) error {
 }
 
 const getAccountByEmail = `-- name: GetAccountByEmail :one
-SELECT id, firstname, lastname, email, hashed_password, created_at, updated_at FROM accounts WHERE email = $1
+SELECT id, firstname, lastname, email, is_verified, hashed_password, created_at, updated_at FROM accounts WHERE email = $1
 `
 
 func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account, error) {
@@ -76,6 +78,7 @@ func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account,
 		&i.Firstname,
 		&i.Lastname,
 		&i.Email,
+		&i.IsVerified,
 		&i.HashedPassword,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -84,7 +87,7 @@ func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account,
 }
 
 const getAccountByID = `-- name: GetAccountByID :one
-SELECT id, firstname, lastname, email, hashed_password, created_at, updated_at FROM accounts WHERE id = $1
+SELECT id, firstname, lastname, email, is_verified, hashed_password, created_at, updated_at FROM accounts WHERE id = $1
 `
 
 func (q *Queries) GetAccountByID(ctx context.Context, id int64) (Account, error) {
@@ -95,6 +98,7 @@ func (q *Queries) GetAccountByID(ctx context.Context, id int64) (Account, error)
 		&i.Firstname,
 		&i.Lastname,
 		&i.Email,
+		&i.IsVerified,
 		&i.HashedPassword,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -103,7 +107,7 @@ func (q *Queries) GetAccountByID(ctx context.Context, id int64) (Account, error)
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT id, firstname, lastname, email, hashed_password, created_at, updated_at FROM accounts ORDER BY id LIMIT $1 OFFSET $2
+SELECT id, firstname, lastname, email, is_verified, hashed_password, created_at, updated_at FROM accounts ORDER BY id LIMIT $1 OFFSET $2
 `
 
 type ListAccountsParams struct {
@@ -125,6 +129,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 			&i.Firstname,
 			&i.Lastname,
 			&i.Email,
+			&i.IsVerified,
 			&i.HashedPassword,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -140,24 +145,49 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 }
 
 const updateAccountPassword = `-- name: UpdateAccountPassword :one
-UPDATE accounts SET hashed_password = $1, updated_at = $2
-WHERE id = $3 RETURNING id, firstname, lastname, email, hashed_password, created_at, updated_at
+UPDATE accounts SET hashed_password = $1, updated_at = now()
+WHERE id = $2 RETURNING id, firstname, lastname, email, is_verified, hashed_password, created_at, updated_at
 `
 
 type UpdateAccountPasswordParams struct {
-	HashedPassword string    `json:"hashed_password"`
-	UpdatedAt      time.Time `json:"updated_at"`
-	ID             int64     `json:"id"`
+	HashedPassword string `json:"hashed_password"`
+	ID             int64  `json:"id"`
 }
 
 func (q *Queries) UpdateAccountPassword(ctx context.Context, arg UpdateAccountPasswordParams) (Account, error) {
-	row := q.db.QueryRow(ctx, updateAccountPassword, arg.HashedPassword, arg.UpdatedAt, arg.ID)
+	row := q.db.QueryRow(ctx, updateAccountPassword, arg.HashedPassword, arg.ID)
 	var i Account
 	err := row.Scan(
 		&i.ID,
 		&i.Firstname,
 		&i.Lastname,
 		&i.Email,
+		&i.IsVerified,
+		&i.HashedPassword,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateAccountStatus = `-- name: UpdateAccountStatus :one
+UPDATE accounts SET is_verified = $1, updated_at = now() WHERE id = $2 RETURNING id, firstname, lastname, email, is_verified, hashed_password, created_at, updated_at
+`
+
+type UpdateAccountStatusParams struct {
+	IsVerified pgtype.Bool `json:"is_verified"`
+	ID         int64       `json:"id"`
+}
+
+func (q *Queries) UpdateAccountStatus(ctx context.Context, arg UpdateAccountStatusParams) (Account, error) {
+	row := q.db.QueryRow(ctx, updateAccountStatus, arg.IsVerified, arg.ID)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Firstname,
+		&i.Lastname,
+		&i.Email,
+		&i.IsVerified,
 		&i.HashedPassword,
 		&i.CreatedAt,
 		&i.UpdatedAt,

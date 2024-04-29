@@ -11,12 +11,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type AuthRepository interface {
 	Register(ctx *gin.Context, arg validators.RegisterInput) (models.RegisterResponse, error)
 	Login(ctx *gin.Context, arg validators.LoginInput) (models.LoginResponse, error)
 	ResendRegistrationOTP(ctx *gin.Context, arg validators.ResendRegistrationOtpInput) (models.ResendRegistrationOtpResponse, error)
+	VerifyAccount(ctx *gin.Context, arg validators.VerifyAccountInput) (models.VerifyAccountResponse, error)
 }
 
 func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (models.RegisterResponse, error) {
@@ -150,6 +152,70 @@ func (r *Repository) ResendRegistrationOTP(ctx *gin.Context, arg validators.Rese
 		FirstName: a.Firstname,
 		Email:     a.Email,
 		OTP:       otp,
+	}
+
+	return response, nil
+}
+
+func (r *Repository) VerifyAccount(ctx *gin.Context, arg validators.VerifyAccountInput) (models.VerifyAccountResponse, error) {
+	a, err := r.DB.GetAccountByEmail(ctx, arg.Email)
+	if err != nil {
+		log.Println("error getting account by email:", err)
+		return models.VerifyAccountResponse{}, err
+	}
+
+	// GetOTPByTypeAndID
+	args := database.GetOtpByAccountIDAndTypeParams{
+		AccountID: a.ID,
+		Type:      int64(messages.AccountTokenTypeEmailConfirmationKey),
+	}
+
+	// Check if email is verified
+	otp, err := r.DB.GetOtpByAccountIDAndType(ctx, args)
+	if err != nil {
+		// check if err is not found
+		if errors.Is(err, messages.ErrRecordNotFound) {
+			log.Println("email is already verified, no record in db:", err)
+			return models.VerifyAccountResponse{}, messages.ErrEmailIsVerified
+		}
+		log.Println("no record in db:", err)
+		return models.VerifyAccountResponse{}, err
+	}
+
+	if otp.Otp != arg.OTP {
+		log.Println("otp does not match:", err)
+		return models.VerifyAccountResponse{}, messages.ErrInvalidOTP
+	}
+
+	// update account status
+	_, err = r.DB.UpdateAccountStatus(ctx, database.UpdateAccountStatusParams{
+		ID: a.ID,
+		IsVerified: pgtype.Bool{
+			Bool:  true,
+			Valid: true,
+		},
+	})
+	if err != nil {
+		log.Println("unable to update account status:", err)
+		return models.VerifyAccountResponse{}, err
+	}
+
+	// delete OTP
+	err = r.DB.DeleteOtp(ctx, database.DeleteOtpParams{
+		ID:        otp.ID,
+		AccountID: otp.AccountID,
+		Type:      int64(messages.AccountTokenTypeEmailConfirmationKey),
+	})
+	if err != nil {
+		log.Println("unable to delete OTP:", err)
+		return models.VerifyAccountResponse{}, err
+	}
+
+	response := models.VerifyAccountResponse{
+		FirstName: a.Firstname,
+		Email:     a.Email,
+		CreatedAt: a.CreatedAt,
+		UpdatedAt: a.UpdatedAt,
 	}
 
 	return response, nil

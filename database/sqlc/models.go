@@ -6,16 +6,19 @@ package database
 
 import (
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Account struct {
-	ID             int64     `json:"id"`
-	Firstname      string    `json:"firstname"`
-	Lastname       string    `json:"lastname"`
-	Email          string    `json:"email"`
-	HashedPassword string    `json:"hashed_password"`
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	ID             int64       `json:"id"`
+	Firstname      string      `json:"firstname"`
+	Lastname       string      `json:"lastname"`
+	Email          string      `json:"email"`
+	IsVerified     pgtype.Bool `json:"is_verified"`
+	HashedPassword string      `json:"hashed_password"`
+	CreatedAt      time.Time   `json:"created_at"`
+	UpdatedAt      time.Time   `json:"updated_at"`
 }
 
 type AccountOtp struct {

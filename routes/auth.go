@@ -9,8 +9,8 @@ func registerAuthRoute(rg *gin.RouterGroup) {
 	router.POST("/register", m.Throttle(4), c.Register)
 	router.POST("/login", m.Throttle(4), c.Login)
 	router.POST("/resend-registration-otp", m.Throttle(4), c.ResendRegistrationOtp)
+	router.POST("/verify-account", m.Throttle(3), c.VerifyAccount)
 
-	// router.POST("/confirm-account", m.Throttle(3), c.ConfirmAccount)
 	// router.POST("/password/reset", m.Throttle(2), c.PasswordReset)
 	// router.POST("/password/reset/confirm", m.Throttle(2), c.PasswordResetConfirm)
 	// router.POST("/password/reset/change", m.Throttle(2), c.PasswordResetChange)

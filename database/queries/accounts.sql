@@ -16,8 +16,11 @@ SELECT * FROM accounts WHERE email = $1;
 SELECT * FROM accounts ORDER BY id LIMIT $1 OFFSET $2;
 
 -- name: UpdateAccountPassword :one
-UPDATE accounts SET hashed_password = $1, updated_at = $2
-WHERE id = $3 RETURNING *;
+UPDATE accounts SET hashed_password = $1, updated_at = now()
+WHERE id = $2 RETURNING *;
+
+-- name: UpdateAccountStatus :one
+UPDATE accounts SET is_verified = $1, updated_at = now() WHERE id = $2 RETURNING *;
 
 -- name: DeleteAccount :exec
 DELETE FROM accounts WHERE id = $1;

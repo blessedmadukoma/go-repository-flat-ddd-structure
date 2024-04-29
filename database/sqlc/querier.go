@@ -14,7 +14,7 @@ type Querier interface {
 	DeleteAccount(ctx context.Context, id int64) error
 	DeleteAllAccounts(ctx context.Context) error
 	DeleteAllOtps(ctx context.Context) error
-	DeleteOtp(ctx context.Context, id int64) error
+	DeleteOtp(ctx context.Context, arg DeleteOtpParams) error
 	GetAccountByEmail(ctx context.Context, email string) (Account, error)
 	GetAccountByID(ctx context.Context, id int64) (Account, error)
 	GetOtpByAccountID(ctx context.Context, accountID int64) (AccountOtp, error)
@@ -23,6 +23,7 @@ type Querier interface {
 	ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error)
 	ListOtps(ctx context.Context, arg ListOtpsParams) ([]AccountOtp, error)
 	UpdateAccountPassword(ctx context.Context, arg UpdateAccountPasswordParams) (Account, error)
+	UpdateAccountStatus(ctx context.Context, arg UpdateAccountStatusParams) (Account, error)
 	UpdateOtp(ctx context.Context, arg UpdateOtpParams) (AccountOtp, error)
 }
 

@@ -20,10 +20,10 @@ type ResendRegistrationOtpInput struct {
 	Email string `json:"email" binding:"required"`
 }
 
-// ConfirmAccountInput for validating account confirm
-type ConfirmAccountInput struct {
+// VerifyAccountInput for verifying account
+type VerifyAccountInput struct {
 	Email string `json:"email" binding:"required"`
-	Token string `json:"token" binding:"required"`
+	OTP   string `json:"otp" binding:"required"`
 }
 
 // ConfirmOTPInput for validating OTP confirm

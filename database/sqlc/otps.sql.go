@@ -47,11 +47,17 @@ func (q *Queries) DeleteAllOtps(ctx context.Context) error {
 }
 
 const deleteOtp = `-- name: DeleteOtp :exec
-DELETE FROM account_otps WHERE id = $1
+DELETE FROM account_otps WHERE id = $1 AND account_id = $2 AND type = $3
 `
 
-func (q *Queries) DeleteOtp(ctx context.Context, id int64) error {
-	_, err := q.db.Exec(ctx, deleteOtp, id)
+type DeleteOtpParams struct {
+	ID        int64 `json:"id"`
+	AccountID int64 `json:"account_id"`
+	Type      int64 `json:"type"`
+}
+
+func (q *Queries) DeleteOtp(ctx context.Context, arg DeleteOtpParams) error {
+	_, err := q.db.Exec(ctx, deleteOtp, arg.ID, arg.AccountID, arg.Type)
 	return err
 }
 
