@@ -12,8 +12,8 @@ func registerAuthRoute(rg *gin.RouterGroup) {
 	router.POST("/verify-account", m.Throttle(3), c.VerifyAccount)
 	router.POST("/password/reset", m.Throttle(2), c.PasswordReset)
 	router.POST("/password/reset/confirm", m.Throttle(2), c.PasswordResetConfirm)
+	router.POST("/password/reset/change", m.Throttle(2), c.PasswordResetChange)
 
-	// router.POST("/password/reset/change", m.Throttle(2), c.PasswordResetChange)
 	// router.GET("/otp/generate", m.TokenAuthMiddleware(), m.Throttle(2), c.Generate2FAOTP)
 	// router.POST("/otp/verify", m.TokenAuthMiddleware(), m.Throttle(4), c.Verify2FAOTP)
 	// router.POST("/otp/validate", m.TokenAuthMiddleware(), m.Throttle(4), c.Validate2FAOTP)

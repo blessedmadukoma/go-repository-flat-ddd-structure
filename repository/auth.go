@@ -23,6 +23,7 @@ type AuthRepository interface {
 	VerifyAccount(ctx *gin.Context, arg validators.VerifyAccountInput) (models.VerifyAccountResponse, error)
 	PasswordReset(ctx *gin.Context, arg validators.PasswordResetInput) (models.ForgotPasswordResponse, error)
 	PasswordResetConfirm(ctx *gin.Context, arg validators.PasswordResetConfirmInput) (models.ForgotPasswordConfirmResponse, error)
+	PasswordResetChange(ctx *gin.Context, arg validators.PasswordResetChangeInput) (models.ForgotPasswordChangeResponse, error)
 }
 
 func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (models.RegisterResponse, error) {
@@ -312,6 +313,68 @@ func (r Repository) PasswordResetConfirm(ctx *gin.Context, arg validators.Passwo
 
 	response := models.ForgotPasswordConfirmResponse{
 		Message: "Link is valid",
+	}
+
+	return response, nil
+}
+
+// PasswordResetChange changes the password using the reset link
+func (r Repository) PasswordResetChange(ctx *gin.Context, arg validators.PasswordResetChangeInput) (models.ForgotPasswordChangeResponse, error) {
+	// get the user by email
+	a, err := r.DB.GetAccountByEmail(ctx, arg.Email)
+	if err != nil {
+		log.Println("error getting account by email:", err)
+		return models.ForgotPasswordChangeResponse{}, messages.ErrUserNotExists
+	}
+
+	// Get Reset Link By Type And ID
+	args := database.GetOtpByAccountIDAndTypeParams{
+		AccountID: a.ID,
+		Type:      int64(messages.AccountTokenTypePasswordResetKey),
+	}
+
+	linkData, err := r.DB.GetOtpByAccountIDAndType(ctx, args)
+	if err != nil {
+		log.Println("error getting OTP by account id and type:", err)
+		return models.ForgotPasswordChangeResponse{}, messages.ErrInvalidLink
+	}
+
+	if linkData.Otp != arg.Link {
+		log.Println("links do not match:", err)
+		return models.ForgotPasswordChangeResponse{}, messages.ErrInvalidLink
+
+	}
+
+	// hash password
+	hashedPassword, err := util.HashPassword(arg.NewPassword)
+	if err != nil {
+		log.Println("error hashing password:", err)
+		return models.ForgotPasswordChangeResponse{}, err
+	}
+
+	// update password
+	_, err = r.DB.UpdateAccountPassword(ctx, database.UpdateAccountPasswordParams{
+		ID:             a.ID,
+		HashedPassword: hashedPassword,
+	})
+	if err != nil {
+		log.Println("error updating password:", err)
+		return models.ForgotPasswordChangeResponse{}, err
+	}
+
+	// delete OTP
+	err = r.DB.DeleteOtp(ctx, database.DeleteOtpParams{
+		ID:        linkData.ID,
+		AccountID: linkData.AccountID,
+		Type:      int64(messages.AccountTokenTypePasswordResetKey),
+	})
+	if err != nil {
+		log.Println("unable to delete OTP:", err)
+		return models.ForgotPasswordChangeResponse{}, err
+	}
+
+	response := models.ForgotPasswordChangeResponse{
+		Message: "Password changed successfully",
 	}
 
 	return response, nil

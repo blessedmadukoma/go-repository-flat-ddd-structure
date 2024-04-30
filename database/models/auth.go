@@ -46,3 +46,7 @@ type ForgotPasswordResponse struct {
 type ForgotPasswordConfirmResponse struct {
 	Message string `json:"message"`
 }
+
+type ForgotPasswordChangeResponse struct {
+	Message string `json:"message"`
+}

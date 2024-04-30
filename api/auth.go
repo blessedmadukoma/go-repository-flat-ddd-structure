@@ -182,7 +182,7 @@ func (c Controller) PasswordReset(ctx *gin.Context) {
 
 }
 
-// PasswordResetConfirm confirms the password reset token
+// PasswordResetConfirm confirms the password reset link is valid or not
 func (c Controller) PasswordResetConfirm(ctx *gin.Context) {
 	var R = messages.ResponseFormat{}
 
@@ -196,6 +196,32 @@ func (c Controller) PasswordResetConfirm(ctx *gin.Context) {
 	}
 
 	a, err := c.services.AuthService.PasswordResetConfirm(ctx, i)
+	if err != nil {
+		R.Error = append(R.Error, err.Error())
+		R.Message = messages.SomethingWentWrong
+		ctx.JSON(messages.Response(http.StatusBadRequest, R))
+		return
+	}
+
+	R.Data = a
+
+	ctx.JSON(messages.Response(http.StatusOK, R))
+}
+
+// PasswordResetChange updates the password using the reset link
+func (c Controller) PasswordResetChange(ctx *gin.Context) {
+	var R = messages.ResponseFormat{}
+
+	// Validate input
+	var i validators.PasswordResetChangeInput
+	if err := ctx.ShouldBindJSON(&i); err != nil {
+		R.Error = append(R.Error, err.Error())
+		R.Message = messages.ErrValidationFailed.Error()
+		ctx.JSON(messages.Response(http.StatusUnprocessableEntity, R))
+		return
+	}
+
+	a, err := c.services.AuthService.PasswordResetChange(ctx, i)
 	if err != nil {
 		R.Error = append(R.Error, err.Error())
 		R.Message = messages.SomethingWentWrong
