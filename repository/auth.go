@@ -22,6 +22,7 @@ type AuthRepository interface {
 	ResendRegistrationOTP(ctx *gin.Context, arg validators.ResendRegistrationOtpInput) (models.ResendRegistrationOtpResponse, error)
 	VerifyAccount(ctx *gin.Context, arg validators.VerifyAccountInput) (models.VerifyAccountResponse, error)
 	PasswordReset(ctx *gin.Context, arg validators.PasswordResetInput) (models.ForgotPasswordResponse, error)
+	PasswordResetConfirm(ctx *gin.Context, arg validators.PasswordResetConfirmInput) (models.ForgotPasswordConfirmResponse, error)
 }
 
 func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (models.RegisterResponse, error) {
@@ -280,4 +281,38 @@ func (r Repository) PasswordReset(ctx *gin.Context, arg validators.PasswordReset
 
 	return response, nil
 
+}
+
+// PasswordResetConfirm confirms the password reset token
+func (r Repository) PasswordResetConfirm(ctx *gin.Context, arg validators.PasswordResetConfirmInput) (models.ForgotPasswordConfirmResponse, error) {
+	// get the user by email
+	a, err := r.DB.GetAccountByEmail(ctx, arg.Email)
+	if err != nil {
+		log.Println("error getting account by email:", err)
+		return models.ForgotPasswordConfirmResponse{}, messages.ErrUserNotExists
+	}
+
+	// Get Reset Link By Type And ID
+	args := database.GetOtpByAccountIDAndTypeParams{
+		AccountID: a.ID,
+		Type:      int64(messages.AccountTokenTypePasswordResetKey),
+	}
+
+	linkData, err := r.DB.GetOtpByAccountIDAndType(ctx, args)
+	if err != nil {
+		log.Println("error getting OTP by account id and type:", err)
+		return models.ForgotPasswordConfirmResponse{}, messages.ErrInvalidLink
+	}
+
+	if linkData.Otp != arg.Link {
+		log.Println("link does not match:", err)
+		return models.ForgotPasswordConfirmResponse{}, messages.ErrInvalidLink
+
+	}
+
+	response := models.ForgotPasswordConfirmResponse{
+		Message: "Link is valid",
+	}
+
+	return response, nil
 }

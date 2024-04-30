@@ -38,7 +38,7 @@ type PasswordResetInput struct {
 
 type PasswordResetConfirmInput struct {
 	Email string `json:"email" binding:"required"`
-	Token string `json:"token" binding:"required"`
+	Link  string `json:"reset_link" binding:"required"`
 }
 
 type PasswordResetChangeInput struct {

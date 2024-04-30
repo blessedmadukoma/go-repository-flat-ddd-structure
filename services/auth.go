@@ -74,3 +74,12 @@ func (s AuthService) PasswordReset(ctx *gin.Context, arg validators.PasswordRese
 
 	return response, nil
 }
+
+func (s AuthService) PasswordResetConfirm(ctx *gin.Context, arg validators.PasswordResetConfirmInput) (models.ForgotPasswordConfirmResponse, error) {
+	response, err := s.repo.PasswordResetConfirm(ctx, arg)
+	if err != nil {
+		return models.ForgotPasswordConfirmResponse{}, err
+	}
+
+	return response, nil
+}

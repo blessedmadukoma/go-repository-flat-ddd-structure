@@ -3,7 +3,6 @@ package api
 import (
 	"goRepositoryPattern/messages"
 	"goRepositoryPattern/tasks"
-	"goRepositoryPattern/util"
 	"goRepositoryPattern/validators"
 	"net/http"
 
@@ -67,14 +66,14 @@ func (c *Controller) Login(ctx *gin.Context) {
 		return
 	}
 
-	// Resend registration token
-	go func() {
-		tasks.RegisterOtpTask(tasks.RegisterOtpInput{
-			Email:     user.Email,
-			FirstName: user.FirstName,
-			OTP:       util.RandomOTP(),
-		})
-	}()
+	// // Resend registration token
+	// go func() {
+	// 	tasks.RegisterOtpTask(tasks.RegisterOtpInput{
+	// 		Email:     user.Email,
+	// 		FirstName: user.FirstName,
+	// 		OTP:       util.RandomOTP(),
+	// 	})
+	// }()
 
 	R.Data = user
 
@@ -183,30 +182,31 @@ func (c Controller) PasswordReset(ctx *gin.Context) {
 
 }
 
-// // PasswordResetConfirm confirms the password reset token
-// func (c Controller) PasswordResetConfirm(ctx *gin.Context) {
-// 	var R = ResponseFormat{}
+// PasswordResetConfirm confirms the password reset token
+func (c Controller) PasswordResetConfirm(ctx *gin.Context) {
+	var R = messages.ResponseFormat{}
 
-// 	// Validate input
-// 	var i validators.PasswordResetConfirmInput
-// 	if err := ctx.ShouldBindJSON(&i); err != nil {
-// 		R.Error = append(R.Error, err.Error())
-// 		R.Message = messages.ValidationFailed
-// 		ctx.JSON(c.Response(http.StatusUnprocessableEntity, R))
-// 		return
-// 	}
+	// Validate input
+	var i validators.PasswordResetConfirmInput
+	if err := ctx.ShouldBindJSON(&i); err != nil {
+		R.Error = append(R.Error, err.Error())
+		R.Message = messages.ErrValidationFailed.Error()
+		ctx.JSON(messages.Response(http.StatusUnprocessableEntity, R))
+		return
+	}
 
-// 	a := models.Account{}
+	a, err := c.services.AuthService.PasswordResetConfirm(ctx, i)
+	if err != nil {
+		R.Error = append(R.Error, err.Error())
+		R.Message = messages.SomethingWentWrong
+		ctx.JSON(messages.Response(http.StatusBadRequest, R))
+		return
+	}
 
-// 	err := c.repo.DB.Model(models.Account{}).Joins("left join account_tokens on account_tokens.account_id = accounts.id").Preload("AccountToken").Where("account_tokens.token = ? AND accounts.email = ? AND account_tokens.type = ?", i.Token, i.Email, constants.AccountTokenTypePasswordResetKey).First(&a).Error
-// 	if err != nil {
-// 		R.Message = messages.InvalidToken
-// 		ctx.JSON(c.Response(http.StatusBadRequest, R))
-// 		return
-// 	}
+	R.Data = a
 
-// 	ctx.JSON(c.Response(http.StatusOK, R))
-// }
+	ctx.JSON(messages.Response(http.StatusOK, R))
+}
 
 // func (c Controller) PasswordResetChange(ctx *gin.Context) {
 // 	var R = ResponseFormat{}
