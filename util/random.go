@@ -57,3 +57,8 @@ func RandomEmail() string {
 func RandomOTP() string {
 	return fmt.Sprintf("%06d", RandomInt(0, 999999))
 }
+
+// RandomResetLink generates a random unique password reset link
+func RandomResetLink() string {
+	return fmt.Sprintf("%v-%v", RandomString(5), RandomString(7))
+}

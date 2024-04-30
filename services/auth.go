@@ -64,3 +64,13 @@ func (s AuthService) VerifyAccount(ctx *gin.Context, arg validators.VerifyAccoun
 
 	return user, nil
 }
+
+func (s AuthService) PasswordReset(ctx *gin.Context, arg validators.PasswordResetInput) (models.ForgotPasswordResponse, error) {
+
+	response, err := s.repo.PasswordReset(ctx, arg)
+	if err != nil {
+		return models.ForgotPasswordResponse{}, err
+	}
+
+	return response, nil
+}

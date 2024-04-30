@@ -148,3 +148,111 @@ func (c Controller) VerifyAccount(ctx *gin.Context) {
 
 	ctx.JSON(messages.Response(http.StatusOK, R))
 }
+
+// PasswordReset sends a password reset email to the user
+func (c Controller) PasswordReset(ctx *gin.Context) {
+	var R = messages.ResponseFormat{}
+
+	// Validate input
+	var i validators.PasswordResetInput
+	if err := ctx.ShouldBindJSON(&i); err != nil {
+		R.Error = append(R.Error, err.Error())
+		R.Message = messages.ErrValidationFailed.Error()
+		ctx.JSON(messages.Response(http.StatusUnprocessableEntity, R))
+		return
+	}
+
+	// a, err := c.repo.GetAccount("accounts.email = ?", i.Email)
+	a, err := c.services.AuthService.PasswordReset(ctx, i)
+	if err != nil {
+		R.Error = append(R.Error, err.Error())
+		R.Message = messages.SomethingWentWrong
+		ctx.JSON(messages.Response(http.StatusBadRequest, R))
+		return
+	}
+
+	// Send email
+	go func() {
+		tasks.PasswordResetTask(tasks.PasswordResetInput{
+			Email:     a.Email,
+			FirstName: a.FirstName,
+			Link:      a.Link,
+		})
+	}()
+
+	ctx.JSON(messages.Response(http.StatusOK, R))
+
+}
+
+// // PasswordResetConfirm confirms the password reset token
+// func (c Controller) PasswordResetConfirm(ctx *gin.Context) {
+// 	var R = ResponseFormat{}
+
+// 	// Validate input
+// 	var i validators.PasswordResetConfirmInput
+// 	if err := ctx.ShouldBindJSON(&i); err != nil {
+// 		R.Error = append(R.Error, err.Error())
+// 		R.Message = messages.ValidationFailed
+// 		ctx.JSON(c.Response(http.StatusUnprocessableEntity, R))
+// 		return
+// 	}
+
+// 	a := models.Account{}
+
+// 	err := c.repo.DB.Model(models.Account{}).Joins("left join account_tokens on account_tokens.account_id = accounts.id").Preload("AccountToken").Where("account_tokens.token = ? AND accounts.email = ? AND account_tokens.type = ?", i.Token, i.Email, constants.AccountTokenTypePasswordResetKey).First(&a).Error
+// 	if err != nil {
+// 		R.Message = messages.InvalidToken
+// 		ctx.JSON(c.Response(http.StatusBadRequest, R))
+// 		return
+// 	}
+
+// 	ctx.JSON(c.Response(http.StatusOK, R))
+// }
+
+// func (c Controller) PasswordResetChange(ctx *gin.Context) {
+// 	var R = ResponseFormat{}
+
+// 	// Validate input
+// 	var i validators.PasswordResetChangeInput
+// 	if err := ctx.ShouldBindJSON(&i); err != nil {
+// 		R.Error = append(R.Error, err.Error())
+// 		R.Message = messages.ValidationFailed
+// 		ctx.JSON(c.Response(http.StatusUnprocessableEntity, R))
+// 		return
+// 	}
+
+// 	a := models.Account{}
+
+// 	err := c.repo.DB.Model(models.Account{}).Joins("left join account_tokens on account_tokens.account_id = accounts.id").Preload("AccountToken").Where("account_tokens.token = ? AND accounts.email = ? AND account_tokens.type = ?", i.Token, i.Email, constants.AccountTokenTypePasswordResetKey).First(&a).Error
+// 	if err != nil {
+// 		R.Message = messages.InvalidToken
+// 		ctx.JSON(c.Response(http.StatusBadRequest, R))
+// 		return
+// 	}
+
+// 	hashedPassword, err := utils.Hash(i.NewPassword)
+// 	if err != nil {
+// 		log.Println("error in hashing new password: - ", err.Error())
+// 		R.Message = messages.InvalidToken
+// 		ctx.JSON(c.Response(http.StatusBadRequest, R))
+// 		return
+// 	}
+
+// 	c.repo.DB.Model(&models.Account{}).Where("id = ?", a.ID).Updates(
+// 		models.Account{
+// 			Password: string(hashedPassword),
+// 		})
+
+// 	// Notify user of password change
+// 	go func() {
+// 		tasks.PasswordChangeTask(tasks.PasswordChangeInput{
+// 			Email:     a.Email,
+// 			FirstName: a.FirstName,
+// 		})
+// 	}()
+
+// 	// Delete token
+// 	c.repo.DB.Delete(&a.AccountToken)
+
+// 	ctx.JSON(c.Response(http.StatusOK, R))
+// }

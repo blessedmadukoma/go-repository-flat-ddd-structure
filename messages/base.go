@@ -18,6 +18,7 @@ var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrInvalidOTP         = errors.New("invalid account OTP")
 	ErrInvalidToken       = errors.New("invalid authentication token")
+	ErrInvalidLink        = errors.New("invalid link")
 	ErrInvalidPassword    = errors.New("password does not match")
 	ErrExpiredToken       = errors.New("token expired")
 	ErrValidationFailed   = errors.New("validation failed, please contact support")

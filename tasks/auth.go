@@ -20,7 +20,7 @@ type RegisterOtpInput struct {
 type PasswordResetInput struct {
 	Email     string `json:"email"`
 	FirstName string `json:"first_name"`
-	Code      string `json:"code"`
+	Link      string `json:"reset_link"`
 }
 
 type PasswordChangeInput struct {
@@ -81,7 +81,7 @@ func (t Task) HandlePasswordResetTask(ctx context.Context, a *asynq.Task) error 
 	return mail.Send(p.Email,
 		"Forgot your password",
 		"templates/auth/password_reset.html",
-		map[string]string{"first_name": p.FirstName, "code": p.Code},
+		map[string]string{"first_name": p.FirstName, "link": p.Link},
 	)
 }
 

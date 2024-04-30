@@ -2,12 +2,14 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"goRepositoryPattern/database/models"
 	database "goRepositoryPattern/database/sqlc"
 	"goRepositoryPattern/messages"
 	"goRepositoryPattern/util"
 	"goRepositoryPattern/validators"
 	"log"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +21,7 @@ type AuthRepository interface {
 	Login(ctx *gin.Context, arg validators.LoginInput) (models.LoginResponse, error)
 	ResendRegistrationOTP(ctx *gin.Context, arg validators.ResendRegistrationOtpInput) (models.ResendRegistrationOtpResponse, error)
 	VerifyAccount(ctx *gin.Context, arg validators.VerifyAccountInput) (models.VerifyAccountResponse, error)
+	PasswordReset(ctx *gin.Context, arg validators.PasswordResetInput) (models.ForgotPasswordResponse, error)
 }
 
 func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (models.RegisterResponse, error) {
@@ -219,4 +222,62 @@ func (r *Repository) VerifyAccount(ctx *gin.Context, arg validators.VerifyAccoun
 	}
 
 	return response, nil
+}
+
+func (r Repository) PasswordReset(ctx *gin.Context, arg validators.PasswordResetInput) (models.ForgotPasswordResponse, error) {
+	// get user details from db
+	a, err := r.DB.GetAccountByEmail(ctx, arg.Email)
+	if err != nil {
+		log.Println("error getting account by email:", err)
+		return models.ForgotPasswordResponse{}, err
+	}
+
+	// Get OTP/Reset Link By Type And ID
+	args := database.GetOtpByAccountIDAndTypeParams{
+		AccountID: a.ID,
+		Type:      int64(messages.AccountTokenTypePasswordResetKey),
+	}
+
+	// get link if any (if there is any, generate a new link and send)
+	dbLink, err := r.DB.GetOtpByAccountIDAndType(ctx, args)
+	if err != nil {
+		log.Println("reset link not found, proceeding to generate one:", err)
+	}
+
+	// generate token
+	link := util.RandomResetLink()
+
+	// store in db
+	if dbLink.Otp != "" {
+		// update existing OTP
+		_, err = r.DB.UpdateOtp(ctx, database.UpdateOtpParams{
+			AccountID: a.ID,
+			Otp:       link,
+			Type:      int64(messages.AccountTokenTypePasswordResetKey),
+		})
+		if err != nil {
+			log.Println("error updating reset link - ", err)
+			return models.ForgotPasswordResponse{}, err
+		}
+	} else {
+		// create new OTP
+		_, err = r.DB.CreateOtp(ctx, database.CreateOtpParams{
+			AccountID: a.ID,
+			Otp:       link,
+			Type:      int64(messages.AccountTokenTypePasswordResetKey),
+		})
+		if err != nil {
+			log.Println("error in creating reset link - ", err)
+			return models.ForgotPasswordResponse{}, err
+		}
+	}
+
+	response := models.ForgotPasswordResponse{
+		FirstName: a.Firstname,
+		Email:     a.Email,
+		Link:      fmt.Sprintf("%s/%s", os.Getenv("RESET_LINK"), link),
+	}
+
+	return response, nil
+
 }
