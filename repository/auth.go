@@ -306,9 +306,7 @@ func (r Repository) PasswordResetConfirm(ctx *gin.Context, arg validators.Passwo
 	}
 
 	if linkData.Otp != arg.Link {
-		log.Println("link does not match:", err)
 		return models.ForgotPasswordConfirmResponse{}, messages.ErrInvalidLink
-
 	}
 
 	response := models.ForgotPasswordConfirmResponse{
@@ -340,9 +338,7 @@ func (r Repository) PasswordResetChange(ctx *gin.Context, arg validators.Passwor
 	}
 
 	if linkData.Otp != arg.Link {
-		log.Println("links do not match:", err)
 		return models.ForgotPasswordChangeResponse{}, messages.ErrInvalidLink
-
 	}
 
 	// hash password
