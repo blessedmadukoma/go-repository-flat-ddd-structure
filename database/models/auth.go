@@ -1,25 +1,30 @@
 package models
 
-import "time"
+import (
+	database "goRepositoryPattern/database/sqlc"
+	"time"
+)
 
 type RegisterResponse struct {
-	ID        int64     `json:"id"`
-	FirstName string    `json:"firstname"`
-	LastName  string    `json:"lastname"`
-	Email     string    `json:"email"`
-	OTP       string    `json:"-"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int64         `json:"-"`
+	FirstName string        `json:"firstname"`
+	LastName  string        `json:"lastname"`
+	Email     string        `json:"email"`
+	Role      database.Role `json:"-"`
+	OTP       string        `json:"-"`
+	CreatedAt time.Time     `json:"created_at"`
+	UpdatedAt time.Time     `json:"updated_at"`
 }
 
 type LoginResponse struct {
-	ID        int64     `json:"id"`
-	FirstName string    `json:"firstname"`
-	LastName  string    `json:"lastname"`
-	Email     string    `json:"email"`
-	Token     string    `json:"token"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int64         `json:"-"`
+	FirstName string        `json:"firstname"`
+	LastName  string        `json:"lastname"`
+	Email     string        `json:"email"`
+	Role      database.Role `json:"-"`
+	Token     string        `json:"token"`
+	CreatedAt time.Time     `json:"created_at"`
+	UpdatedAt time.Time     `json:"updated_at"`
 }
 
 type ResendRegistrationOtpResponse struct {

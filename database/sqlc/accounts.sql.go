@@ -16,14 +16,16 @@ INSERT INTO accounts (
   firstname,
   lastname,
   email,
+  role,
   hashed_password
-) VALUES ($1, $2, $3, $4) RETURNING id, firstname, lastname, email, is_verified, hashed_password, created_at, updated_at
+) VALUES ($1, $2, $3, $4, $5) RETURNING id, firstname, lastname, email, role, is_verified, hashed_password, created_at, updated_at
 `
 
 type CreateAccountParams struct {
 	Firstname      string `json:"firstname"`
 	Lastname       string `json:"lastname"`
 	Email          string `json:"email"`
+	Role           Role   `json:"role"`
 	HashedPassword string `json:"hashed_password"`
 }
 
@@ -32,6 +34,7 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		arg.Firstname,
 		arg.Lastname,
 		arg.Email,
+		arg.Role,
 		arg.HashedPassword,
 	)
 	var i Account
@@ -40,6 +43,7 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		&i.Firstname,
 		&i.Lastname,
 		&i.Email,
+		&i.Role,
 		&i.IsVerified,
 		&i.HashedPassword,
 		&i.CreatedAt,
@@ -67,7 +71,7 @@ func (q *Queries) DeleteAllAccounts(ctx context.Context) error {
 }
 
 const getAccountByEmail = `-- name: GetAccountByEmail :one
-SELECT id, firstname, lastname, email, is_verified, hashed_password, created_at, updated_at FROM accounts WHERE email = $1
+SELECT id, firstname, lastname, email, role, is_verified, hashed_password, created_at, updated_at FROM accounts WHERE email = $1
 `
 
 func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account, error) {
@@ -78,6 +82,7 @@ func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account,
 		&i.Firstname,
 		&i.Lastname,
 		&i.Email,
+		&i.Role,
 		&i.IsVerified,
 		&i.HashedPassword,
 		&i.CreatedAt,
@@ -87,7 +92,7 @@ func (q *Queries) GetAccountByEmail(ctx context.Context, email string) (Account,
 }
 
 const getAccountByID = `-- name: GetAccountByID :one
-SELECT id, firstname, lastname, email, is_verified, hashed_password, created_at, updated_at FROM accounts WHERE id = $1
+SELECT id, firstname, lastname, email, role, is_verified, hashed_password, created_at, updated_at FROM accounts WHERE id = $1
 `
 
 func (q *Queries) GetAccountByID(ctx context.Context, id int64) (Account, error) {
@@ -98,6 +103,7 @@ func (q *Queries) GetAccountByID(ctx context.Context, id int64) (Account, error)
 		&i.Firstname,
 		&i.Lastname,
 		&i.Email,
+		&i.Role,
 		&i.IsVerified,
 		&i.HashedPassword,
 		&i.CreatedAt,
@@ -107,7 +113,7 @@ func (q *Queries) GetAccountByID(ctx context.Context, id int64) (Account, error)
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT id, firstname, lastname, email, is_verified, hashed_password, created_at, updated_at FROM accounts ORDER BY id LIMIT $1 OFFSET $2
+SELECT id, firstname, lastname, email, role, is_verified, hashed_password, created_at, updated_at FROM accounts ORDER BY id LIMIT $1 OFFSET $2
 `
 
 type ListAccountsParams struct {
@@ -129,6 +135,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 			&i.Firstname,
 			&i.Lastname,
 			&i.Email,
+			&i.Role,
 			&i.IsVerified,
 			&i.HashedPassword,
 			&i.CreatedAt,
@@ -146,7 +153,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 
 const updateAccountPassword = `-- name: UpdateAccountPassword :one
 UPDATE accounts SET hashed_password = $1, updated_at = now()
-WHERE id = $2 RETURNING id, firstname, lastname, email, is_verified, hashed_password, created_at, updated_at
+WHERE id = $2 RETURNING id, firstname, lastname, email, role, is_verified, hashed_password, created_at, updated_at
 `
 
 type UpdateAccountPasswordParams struct {
@@ -162,6 +169,33 @@ func (q *Queries) UpdateAccountPassword(ctx context.Context, arg UpdateAccountPa
 		&i.Firstname,
 		&i.Lastname,
 		&i.Email,
+		&i.Role,
+		&i.IsVerified,
+		&i.HashedPassword,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateAccountRole = `-- name: UpdateAccountRole :one
+UPDATE accounts SET role = $1, updated_at = now() WHERE id = $2 RETURNING id, firstname, lastname, email, role, is_verified, hashed_password, created_at, updated_at
+`
+
+type UpdateAccountRoleParams struct {
+	Role Role  `json:"role"`
+	ID   int64 `json:"id"`
+}
+
+func (q *Queries) UpdateAccountRole(ctx context.Context, arg UpdateAccountRoleParams) (Account, error) {
+	row := q.db.QueryRow(ctx, updateAccountRole, arg.Role, arg.ID)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Firstname,
+		&i.Lastname,
+		&i.Email,
+		&i.Role,
 		&i.IsVerified,
 		&i.HashedPassword,
 		&i.CreatedAt,
@@ -171,7 +205,7 @@ func (q *Queries) UpdateAccountPassword(ctx context.Context, arg UpdateAccountPa
 }
 
 const updateAccountStatus = `-- name: UpdateAccountStatus :one
-UPDATE accounts SET is_verified = $1, updated_at = now() WHERE id = $2 RETURNING id, firstname, lastname, email, is_verified, hashed_password, created_at, updated_at
+UPDATE accounts SET is_verified = $1, updated_at = now() WHERE id = $2 RETURNING id, firstname, lastname, email, role, is_verified, hashed_password, created_at, updated_at
 `
 
 type UpdateAccountStatusParams struct {
@@ -187,6 +221,7 @@ func (q *Queries) UpdateAccountStatus(ctx context.Context, arg UpdateAccountStat
 		&i.Firstname,
 		&i.Lastname,
 		&i.Email,
+		&i.Role,
 		&i.IsVerified,
 		&i.HashedPassword,
 		&i.CreatedAt,

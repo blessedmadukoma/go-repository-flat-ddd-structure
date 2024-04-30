@@ -23,6 +23,7 @@ type Querier interface {
 	ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error)
 	ListOtps(ctx context.Context, arg ListOtpsParams) ([]AccountOtp, error)
 	UpdateAccountPassword(ctx context.Context, arg UpdateAccountPasswordParams) (Account, error)
+	UpdateAccountRole(ctx context.Context, arg UpdateAccountRoleParams) (Account, error)
 	UpdateAccountStatus(ctx context.Context, arg UpdateAccountStatusParams) (Account, error)
 	UpdateOtp(ctx context.Context, arg UpdateOtpParams) (AccountOtp, error)
 }

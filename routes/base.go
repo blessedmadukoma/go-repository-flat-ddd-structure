@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"goRepositoryPattern/admin"
 	"goRepositoryPattern/api"
 	"goRepositoryPattern/middleware"
 	"goRepositoryPattern/repository"
@@ -10,13 +11,14 @@ import (
 )
 
 var (
-	c api.Controller
-	m middleware.Middleware
-	// ac admin.AdminController
+	c  api.Controller
+	m  middleware.Middleware
+	ac admin.AdminController
 )
 
 func RegisterRoutes(engine *gin.Engine, repo *repository.Repository, services *services.Service) {
 	c = *api.NewController(repo, services)
+	ac = *admin.NewAdminController(repo, services)
 	m = middleware.NewMiddleware(repo, c)
 
 	engine.Use(m.CORSMiddleware())
@@ -25,4 +27,5 @@ func RegisterRoutes(engine *gin.Engine, repo *repository.Repository, services *s
 
 	registerAuthRoute(v1)
 	registerUserRoute(v1)
+	registerAdminRoute(v1)
 }

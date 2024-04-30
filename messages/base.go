@@ -13,6 +13,7 @@ var (
 	SomethingWentWrong     = "something went wrong, please contact support"
 	InvalidCredentials     = "invalid credentials"
 	EmailIsVerified        = "email is verified, please proceed to login"
+	UnAuthorizedAccess     = "unauthorized access"
 
 	ErrEmailIsVerified    = errors.New("email is verified, please proceed to login")
 	ErrInvalidCredentials = errors.New("invalid credentials")

@@ -24,6 +24,9 @@ type AuthRepository interface {
 	PasswordReset(ctx *gin.Context, arg validators.PasswordResetInput) (models.ForgotPasswordResponse, error)
 	PasswordResetConfirm(ctx *gin.Context, arg validators.PasswordResetConfirmInput) (models.ForgotPasswordConfirmResponse, error)
 	PasswordResetChange(ctx *gin.Context, arg validators.PasswordResetChangeInput) (models.ForgotPasswordChangeResponse, error)
+
+	// Admin routes
+	AdminLogin(ctx *gin.Context, arg validators.AdminLoginInput) (models.LoginResponse, error)
 }
 
 func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (models.RegisterResponse, error) {
@@ -41,10 +44,19 @@ func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (m
 		return models.RegisterResponse{}, err
 	}
 
+	var role database.Role
+
+	if arg.Role == database.RoleAdmin {
+		role = database.RoleAdmin
+	} else {
+		role = database.RoleUser
+	}
+
 	args := database.CreateAccountParams{
 		Firstname:      arg.FirstName,
 		Lastname:       arg.LastName,
 		Email:          arg.Email,
+		Role:           role,
 		HashedPassword: hashedPassword,
 	}
 
@@ -71,6 +83,7 @@ func (r *Repository) Register(ctx *gin.Context, arg validators.RegisterInput) (m
 		FirstName: user.Firstname,
 		LastName:  user.Lastname,
 		Email:     user.Email,
+		Role:      user.Role,
 		OTP:       otp,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
@@ -106,6 +119,7 @@ func (r *Repository) Login(ctx *gin.Context, arg validators.LoginInput) (models.
 		FirstName: user.Firstname,
 		LastName:  user.Lastname,
 		Email:     user.Email,
+		Role:      user.Role,
 		Token:     token,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,

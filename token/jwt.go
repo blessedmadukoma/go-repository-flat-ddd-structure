@@ -25,7 +25,6 @@ type jwtClaim struct {
 }
 
 // CreateToken creates a new JWT token
-// func (j *JWTToken) CreateToken(user_id int64) (string, error) {
 func (j *JWTToken) CreateToken(user_id int64, duration time.Duration) (string, error) {
 	claims := jwtClaim{
 		UserID: user_id,
@@ -40,7 +39,7 @@ func (j *JWTToken) CreateToken(user_id int64, duration time.Duration) (string, e
 		return "", err
 	}
 
-	return string(tokenString), nil
+	return tokenString, nil
 }
 
 // VerifyToken verifies a JWT token

@@ -51,9 +51,10 @@ func Initialize() error {
 	repo := repository.NewRepository(DB, tokenController)
 	authService := services.NewAuthService(repo)
 	userService := services.NewUserService(repo)
+	accountService := services.NewAccountService(repo)
 
 	// services := services.NewService(repo)
-	services := services.NewService(authService, userService)
+	services := services.NewService(authService, userService, accountService)
 
 	go func() {
 		if err := tasks.StartWorker(tasks.NewTask(repo, services)); err != nil {

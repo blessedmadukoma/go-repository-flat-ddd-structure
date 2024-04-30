@@ -3,8 +3,9 @@ INSERT INTO accounts (
   firstname,
   lastname,
   email,
+  role,
   hashed_password
-) VALUES ($1, $2, $3, $4) RETURNING *;
+) VALUES ($1, $2, $3, $4, $5) RETURNING *;
 
 -- name: GetAccountByID :one
 SELECT * FROM accounts WHERE id = $1;
@@ -18,6 +19,9 @@ SELECT * FROM accounts ORDER BY id LIMIT $1 OFFSET $2;
 -- name: UpdateAccountPassword :one
 UPDATE accounts SET hashed_password = $1, updated_at = now()
 WHERE id = $2 RETURNING *;
+
+-- name: UpdateAccountRole :one
+UPDATE accounts SET role = $1, updated_at = now() WHERE id = $2 RETURNING *;
 
 -- name: UpdateAccountStatus :one
 UPDATE accounts SET is_verified = $1, updated_at = now() WHERE id = $2 RETURNING *;
