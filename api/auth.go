@@ -162,7 +162,6 @@ func (c Controller) PasswordReset(ctx *gin.Context) {
 		return
 	}
 
-	// a, err := c.repo.GetAccount("accounts.email = ?", i.Email)
 	a, err := c.services.AuthService.PasswordReset(ctx, i)
 	if err != nil {
 		R.Error = append(R.Error, err.Error())
