@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"errors"
 	database "goRepositoryPattern/database/sqlc"
+	"goRepositoryPattern/messages"
 	"goRepositoryPattern/validators"
 	"log"
 
@@ -36,6 +38,10 @@ func (r *Repository) GetAccounts(ctx *gin.Context, req validators.ListAccountInp
 func (r Repository) GetAccountByID(ctx *gin.Context, id int64) (database.Account, error) {
 	account, err := r.DB.GetAccountByID(ctx, id)
 	if err != nil {
+		if errors.Is(err, messages.ErrRecordNotFound) {
+			return database.Account{}, messages.ErrUserNotExists
+		}
+
 		return database.Account{}, err
 	}
 

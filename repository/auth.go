@@ -131,7 +131,10 @@ func (r *Repository) Login(ctx *gin.Context, arg validators.LoginInput) (models.
 func (r *Repository) ResendRegistrationOTP(ctx *gin.Context, arg validators.ResendRegistrationOtpInput) (models.ResendRegistrationOtpResponse, error) {
 	a, err := r.DB.GetAccountByEmail(ctx, arg.Email)
 	if err != nil {
-		log.Println("error getting account by email:", err)
+		if errors.Is(err, messages.ErrRecordNotFound) {
+			return models.ResendRegistrationOtpResponse{}, messages.ErrUserNotExists
+		}
+
 		return models.ResendRegistrationOtpResponse{}, err
 	}
 
@@ -146,10 +149,9 @@ func (r *Repository) ResendRegistrationOTP(ctx *gin.Context, arg validators.Rese
 	if err != nil {
 		// check if err is not found
 		if errors.Is(err, messages.ErrRecordNotFound) {
-			log.Println("email is already verified, no record in db:", err)
 			return models.ResendRegistrationOtpResponse{}, messages.ErrEmailIsVerified
 		}
-		log.Println("no record in db:", err)
+
 		return models.ResendRegistrationOtpResponse{}, err
 	}
 
@@ -163,7 +165,6 @@ func (r *Repository) ResendRegistrationOTP(ctx *gin.Context, arg validators.Rese
 
 	_, err = r.DB.UpdateOtp(ctx, newOTPdata)
 	if err != nil {
-		log.Println("unable to update OTP table:", err)
 		return models.ResendRegistrationOtpResponse{}, err
 	}
 
@@ -179,7 +180,10 @@ func (r *Repository) ResendRegistrationOTP(ctx *gin.Context, arg validators.Rese
 func (r *Repository) VerifyAccount(ctx *gin.Context, arg validators.VerifyAccountInput) (models.VerifyAccountResponse, error) {
 	a, err := r.DB.GetAccountByEmail(ctx, arg.Email)
 	if err != nil {
-		log.Println("error getting account by email:", err)
+		if errors.Is(err, messages.ErrRecordNotFound) {
+			return models.VerifyAccountResponse{}, messages.ErrUserNotExists
+		}
+
 		return models.VerifyAccountResponse{}, err
 	}
 
@@ -194,15 +198,13 @@ func (r *Repository) VerifyAccount(ctx *gin.Context, arg validators.VerifyAccoun
 	if err != nil {
 		// check if err is not found
 		if errors.Is(err, messages.ErrRecordNotFound) {
-			log.Println("email is already verified, no record in db:", err)
 			return models.VerifyAccountResponse{}, messages.ErrEmailIsVerified
 		}
-		log.Println("no record in db:", err)
+
 		return models.VerifyAccountResponse{}, err
 	}
 
 	if otp.Otp != arg.OTP {
-		log.Println("otp does not match:", err)
 		return models.VerifyAccountResponse{}, messages.ErrInvalidOTP
 	}
 
@@ -215,7 +217,6 @@ func (r *Repository) VerifyAccount(ctx *gin.Context, arg validators.VerifyAccoun
 		},
 	})
 	if err != nil {
-		log.Println("unable to update account status:", err)
 		return models.VerifyAccountResponse{}, err
 	}
 
@@ -226,7 +227,6 @@ func (r *Repository) VerifyAccount(ctx *gin.Context, arg validators.VerifyAccoun
 		Type:      int64(messages.AccountTokenTypeEmailConfirmationKey),
 	})
 	if err != nil {
-		log.Println("unable to delete OTP:", err)
 		return models.VerifyAccountResponse{}, err
 	}
 
@@ -244,7 +244,10 @@ func (r Repository) PasswordReset(ctx *gin.Context, arg validators.PasswordReset
 	// get user details from db
 	a, err := r.DB.GetAccountByEmail(ctx, arg.Email)
 	if err != nil {
-		log.Println("error getting account by email:", err)
+		if errors.Is(err, messages.ErrRecordNotFound) {
+			return models.ForgotPasswordResponse{}, messages.ErrUserNotExists
+		}
+
 		return models.ForgotPasswordResponse{}, err
 	}
 
@@ -303,8 +306,11 @@ func (r Repository) PasswordResetConfirm(ctx *gin.Context, arg validators.Passwo
 	// get the user by email
 	a, err := r.DB.GetAccountByEmail(ctx, arg.Email)
 	if err != nil {
-		log.Println("error getting account by email:", err)
-		return models.ForgotPasswordConfirmResponse{}, messages.ErrUserNotExists
+		if errors.Is(err, messages.ErrRecordNotFound) {
+			return models.ForgotPasswordConfirmResponse{}, messages.ErrUserNotExists
+		}
+
+		return models.ForgotPasswordConfirmResponse{}, err
 	}
 
 	// Get Reset Link By Type And ID
@@ -315,7 +321,6 @@ func (r Repository) PasswordResetConfirm(ctx *gin.Context, arg validators.Passwo
 
 	linkData, err := r.DB.GetOtpByAccountIDAndType(ctx, args)
 	if err != nil {
-		log.Println("error getting OTP by account id and type:", err)
 		return models.ForgotPasswordConfirmResponse{}, messages.ErrInvalidLink
 	}
 
@@ -335,8 +340,11 @@ func (r Repository) PasswordResetChange(ctx *gin.Context, arg validators.Passwor
 	// get the user by email
 	a, err := r.DB.GetAccountByEmail(ctx, arg.Email)
 	if err != nil {
-		log.Println("error getting account by email:", err)
-		return models.ForgotPasswordChangeResponse{}, messages.ErrUserNotExists
+		if errors.Is(err, messages.ErrRecordNotFound) {
+			return models.ForgotPasswordChangeResponse{}, messages.ErrUserNotExists
+		}
+
+		return models.ForgotPasswordChangeResponse{}, err
 	}
 
 	// Get Reset Link By Type And ID
@@ -347,7 +355,6 @@ func (r Repository) PasswordResetChange(ctx *gin.Context, arg validators.Passwor
 
 	linkData, err := r.DB.GetOtpByAccountIDAndType(ctx, args)
 	if err != nil {
-		log.Println("error getting OTP by account id and type:", err)
 		return models.ForgotPasswordChangeResponse{}, messages.ErrInvalidLink
 	}
 
@@ -358,7 +365,6 @@ func (r Repository) PasswordResetChange(ctx *gin.Context, arg validators.Passwor
 	// hash password
 	hashedPassword, err := util.HashPassword(arg.NewPassword)
 	if err != nil {
-		log.Println("error hashing password:", err)
 		return models.ForgotPasswordChangeResponse{}, err
 	}
 
@@ -368,7 +374,6 @@ func (r Repository) PasswordResetChange(ctx *gin.Context, arg validators.Passwor
 		HashedPassword: hashedPassword,
 	})
 	if err != nil {
-		log.Println("error updating password:", err)
 		return models.ForgotPasswordChangeResponse{}, err
 	}
 
@@ -379,7 +384,6 @@ func (r Repository) PasswordResetChange(ctx *gin.Context, arg validators.Passwor
 		Type:      int64(messages.AccountTokenTypePasswordResetKey),
 	})
 	if err != nil {
-		log.Println("unable to delete OTP:", err)
 		return models.ForgotPasswordChangeResponse{}, err
 	}
 

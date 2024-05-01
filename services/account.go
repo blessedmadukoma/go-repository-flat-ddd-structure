@@ -4,7 +4,6 @@ import (
 	database "goRepositoryPattern/database/sqlc"
 	"goRepositoryPattern/repository"
 	"goRepositoryPattern/validators"
-	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,7 +22,6 @@ func (as *AccountsService) GetAccounts(ctx *gin.Context, req validators.ListAcco
 
 	accounts, err := as.repo.GetAccounts(ctx, req)
 	if err != nil {
-		log.Fatal("error getting accounts:", err)
 		return []database.Account{}, err
 	}
 
@@ -34,7 +32,6 @@ func (as *AccountsService) GetAccountByID(ctx *gin.Context, id int64) (database.
 
 	account, err := as.repo.GetAccountByID(ctx, id)
 	if err != nil {
-		log.Fatal("error getting account:", err)
 		return database.Account{}, err
 	}
 
