@@ -26,6 +26,7 @@ func registerAdminRoute(rg *gin.RouterGroup) {
 			accounts.GET("/email", ac.GetAccountByEmail)
 			// accounts.PUT("/approve/:id", ac.ApproveAccount)
 			accounts.GET("/:id", ac.GetAccountByID)
+			accounts.DELETE("/:id", ac.DeleteAccount)
 		}
 	}
 }

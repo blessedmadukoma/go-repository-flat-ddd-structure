@@ -85,3 +85,26 @@ func (ac AdminController) GetAccountByEmail(ctx *gin.Context) {
 
 	ctx.JSON(messages.Response(http.StatusOK, R))
 }
+
+func (ac AdminController) DeleteAccount(ctx *gin.Context) {
+	var R = messages.ResponseFormat{}
+
+	id := ctx.Param("id")
+	intID, err := strconv.Atoi(id)
+	if err != nil {
+		R.Error = append(R.Error, err.Error())
+		R.Message = messages.ErrValidationFailed.Error()
+		ctx.JSON(messages.Response(http.StatusUnprocessableEntity, R))
+		return
+	}
+
+	err = ac.services.AccountService.DeleteAccount(ctx, int64(intID))
+	if err != nil {
+		R.Error = append(R.Error, err.Error())
+		R.Message = messages.ErrValidationFailed.Error()
+		ctx.JSON(messages.Response(http.StatusUnprocessableEntity, R))
+		return
+	}
+
+	ctx.JSON(messages.Response(http.StatusOK, R))
+}

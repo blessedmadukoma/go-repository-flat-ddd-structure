@@ -14,6 +14,7 @@ type AccountsRepository interface {
 	GetAccounts(ctx *gin.Context, req validators.ListAccountInput) ([]database.Account, error)
 	GetAccountByID(ctx *gin.Context, id int64) (database.Account, error)
 	GetAccountByEmail(ctx *gin.Context, email string) (database.Account, error)
+	DeleteAccount(ctx *gin.Context, id int64) error
 }
 
 func (r *Repository) GetAccounts(ctx *gin.Context, req validators.ListAccountInput) ([]database.Account, error) {
@@ -60,4 +61,26 @@ func (r Repository) GetAccountByEmail(ctx *gin.Context, email string) (database.
 	}
 
 	return account, nil
+}
+
+func (r Repository) DeleteAccount(ctx *gin.Context, id int64) error {
+	_, err := r.DB.GetAccountByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, messages.ErrRecordNotFound) {
+			return messages.ErrUserNotExists
+		}
+
+		return err
+	}
+
+	err = r.DB.DeleteAccount(ctx, id)
+	if err != nil {
+		if errors.Is(err, messages.ErrRecordNotFound) {
+			return messages.ErrUserNotExists
+		}
+
+		return err
+	}
+
+	return nil
 }

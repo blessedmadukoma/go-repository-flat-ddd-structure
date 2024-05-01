@@ -47,3 +47,13 @@ func (as *AccountsService) GetAccountByEmail(ctx *gin.Context, email string) (da
 
 	return account, nil
 }
+
+func (as AccountsService) DeleteAccount(ctx *gin.Context, id int64) error {
+
+	err := as.repo.DeleteAccount(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
