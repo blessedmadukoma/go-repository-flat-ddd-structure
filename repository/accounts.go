@@ -10,6 +10,7 @@ import (
 
 type AccountsRepository interface {
 	GetAccounts(ctx *gin.Context, req validators.ListAccountInput) ([]database.Account, error)
+	GetAccountByID(ctx *gin.Context, id int64) (database.Account, error)
 }
 
 func (r *Repository) GetAccounts(ctx *gin.Context, req validators.ListAccountInput) ([]database.Account, error) {
@@ -30,4 +31,13 @@ func (r *Repository) GetAccounts(ctx *gin.Context, req validators.ListAccountInp
 	}
 
 	return accounts, nil
+}
+
+func (r Repository) GetAccountByID(ctx *gin.Context, id int64) (database.Account, error) {
+	account, err := r.DB.GetAccountByID(ctx, id)
+	if err != nil {
+		return database.Account{}, err
+	}
+
+	return account, nil
 }

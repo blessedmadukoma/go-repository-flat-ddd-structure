@@ -29,3 +29,14 @@ func (as *AccountsService) GetAccounts(ctx *gin.Context, req validators.ListAcco
 
 	return accounts, nil
 }
+
+func (as *AccountsService) GetAccountByID(ctx *gin.Context, id int64) (database.Account, error) {
+
+	account, err := as.repo.GetAccountByID(ctx, id)
+	if err != nil {
+		log.Fatal("error getting account:", err)
+		return database.Account{}, err
+	}
+
+	return account, nil
+}

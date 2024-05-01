@@ -12,6 +12,7 @@ func registerAdminRoute(rg *gin.RouterGroup) {
 		auth := router.Group("/auth")
 		auth.Use(m.Throttle(5))
 		{
+			auth.POST("/register", c.Register)
 			auth.POST("/login", ac.Login)
 		}
 
@@ -23,7 +24,7 @@ func registerAdminRoute(rg *gin.RouterGroup) {
 
 			accounts.GET("", ac.GetAccounts)
 			// accounts.PUT("/approve/:id", ac.ApproveAccount)
-			// accounts.GET("/:id", ac.GetAccount)
+			accounts.GET("/:id", ac.GetAccountByID)
 		}
 	}
 }
