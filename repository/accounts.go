@@ -13,6 +13,7 @@ import (
 type AccountsRepository interface {
 	GetAccounts(ctx *gin.Context, req validators.ListAccountInput) ([]database.Account, error)
 	GetAccountByID(ctx *gin.Context, id int64) (database.Account, error)
+	GetAccountByEmail(ctx *gin.Context, email string) (database.Account, error)
 }
 
 func (r *Repository) GetAccounts(ctx *gin.Context, req validators.ListAccountInput) ([]database.Account, error) {
@@ -37,6 +38,19 @@ func (r *Repository) GetAccounts(ctx *gin.Context, req validators.ListAccountInp
 
 func (r Repository) GetAccountByID(ctx *gin.Context, id int64) (database.Account, error) {
 	account, err := r.DB.GetAccountByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, messages.ErrRecordNotFound) {
+			return database.Account{}, messages.ErrUserNotExists
+		}
+
+		return database.Account{}, err
+	}
+
+	return account, nil
+}
+
+func (r Repository) GetAccountByEmail(ctx *gin.Context, email string) (database.Account, error) {
+	account, err := r.DB.GetAccountByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, messages.ErrRecordNotFound) {
 			return database.Account{}, messages.ErrUserNotExists

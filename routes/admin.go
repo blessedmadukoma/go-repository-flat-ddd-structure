@@ -23,6 +23,7 @@ func registerAdminRoute(rg *gin.RouterGroup) {
 		{
 
 			accounts.GET("", ac.GetAccounts)
+			accounts.GET("/email", ac.GetAccountByEmail)
 			// accounts.PUT("/approve/:id", ac.ApproveAccount)
 			accounts.GET("/:id", ac.GetAccountByID)
 		}

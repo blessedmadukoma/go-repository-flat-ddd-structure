@@ -57,3 +57,31 @@ func (ac AdminController) GetAccountByID(ctx *gin.Context) {
 
 	ctx.JSON(messages.Response(http.StatusOK, R))
 }
+
+func (ac AdminController) GetAccountByEmail(ctx *gin.Context) {
+	var R = messages.ResponseFormat{}
+
+	type getAccountByEmailInput struct {
+		Email string `json:"email" binding:"required"`
+	}
+
+	var req getAccountByEmailInput
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		R.Error = append(R.Error, err.Error())
+		R.Message = messages.ErrValidationFailed.Error()
+		ctx.JSON(messages.Response(http.StatusUnprocessableEntity, R))
+		return
+	}
+
+	response, err := ac.services.AccountService.GetAccountByEmail(ctx, req.Email)
+	if err != nil {
+		R.Error = append(R.Error, err.Error())
+		R.Message = messages.ErrValidationFailed.Error()
+		ctx.JSON(messages.Response(http.StatusUnprocessableEntity, R))
+		return
+	}
+
+	R.Data = response
+
+	ctx.JSON(messages.Response(http.StatusOK, R))
+}

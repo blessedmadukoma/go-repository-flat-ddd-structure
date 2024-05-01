@@ -37,3 +37,13 @@ func (as *AccountsService) GetAccountByID(ctx *gin.Context, id int64) (database.
 
 	return account, nil
 }
+
+func (as *AccountsService) GetAccountByEmail(ctx *gin.Context, email string) (database.Account, error) {
+
+	account, err := as.repo.GetAccountByEmail(ctx, email)
+	if err != nil {
+		return database.Account{}, err
+	}
+
+	return account, nil
+}
