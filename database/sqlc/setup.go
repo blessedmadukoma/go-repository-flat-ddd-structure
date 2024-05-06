@@ -6,6 +6,9 @@ import (
 	"goRepositoryPattern/util"
 	"log"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 )
@@ -22,7 +25,7 @@ func ConnectDataBase(config util.Config) (Store, error) {
 	}
 
 	// run db migration
-	// runDBMigration(config.MigrationURL, config.DBSource)
+	runDBMigration(config.MigrationUrl, config.DBSource)
 
 	store := NewStore(connPool)
 
@@ -30,33 +33,20 @@ func ConnectDataBase(config util.Config) (Store, error) {
 }
 
 // runDBMigration runs the database migration
-// func runDBMigration(migrationURL string, dbSource string) {
-// 	// log.Info().Msg("migrating db...")
-// 	migration, err := migrate.New(migrationURL, dbSource)
-// 	if err != nil {
-// 		// log.Fatal().Msg("cannot create migration instance")
-// 	}
+func runDBMigration(migrationURL string, dbSource string) {
+	log.Println("migrating db...")
+	migration, err := migrate.New(migrationURL, dbSource)
+	if err != nil {
+		log.Println("cannot create migration instance:", err)
+	}
 
-// 	if err = migration.Up(); err != nil {
-// 		if err == migrate.ErrNoChange {
-// 			// log.Info().Msg("no migration changes...")
-// 			return
-// 		}
-// 		// log.Fatal().Msg("cannot migrate db:")
-// 	}
+	if err = migration.Up(); err != nil {
+		if err == migrate.ErrNoChange {
+			log.Println("no migration changes...")
+			return
+		}
+		log.Println("cannot migrate db:", err)
+	}
 
-// 	// log.Info().Msg("migration successful")
-// }
-
-// func RunMigrations() error {
-// 	db, err := c.DB()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	log.Print("Running migrations")
-
-// 	if err := goose.Up(db, "database/migrations"); err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+	log.Println("migration successful...")
+}

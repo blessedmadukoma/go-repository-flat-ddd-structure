@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/url"
 	"os"
@@ -12,26 +11,29 @@ import (
 	"strings"
 
 	"github.com/hibiken/asynq"
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 type Config struct {
-	DBDriver   string `mapstructure:"DB_DRIVER"`
-	DBSource   string `mapstructure:"DB_SOURCE"`
-	RedisUrl   string `mapstructure:"REDIS_URL"`
-	SIGNINGKEY string `mapstructure:"SIGNING_KEY"`
+	DBDriver     string `mapstructure:"DB_DRIVER"`
+	DBSource     string `mapstructure:"DB_SOURCE"`
+	RedisUrl     string `mapstructure:"REDIS_URL"`
+	MigrationUrl string `mapstructure:"MIGRATION_URL"`
+	SIGNINGKEY   string `mapstructure:"SIGNING_KEY"`
 }
 
 func LoadEnvConfig() (config Config) {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Cannot load env:", err)
-	}
+	// err := godotenv.Load()
+	// if err != nil {
+	// 	log.Fatal("Cannot load env:", err)
+	// }
 
 	config.DBDriver = os.Getenv("DB_DRIVER")
 	config.DBSource = os.Getenv("DB_SOURCE")
 	config.SIGNINGKEY = os.Getenv("TOKEN_SYMMETRIC_KEY")
 	config.RedisUrl = os.Getenv("REDIS_URL")
+	config.MigrationUrl = os.Getenv("MIGRATION_URL")
 
 	return config
 }
