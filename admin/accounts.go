@@ -13,7 +13,7 @@ func (ac AdminController) GetAccounts(ctx *gin.Context) {
 	var R = messages.ResponseFormat{}
 
 	var req validators.ListAccountInput
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBindQuery(&req); err != nil {
 		R.Error = append(R.Error, err.Error())
 		R.Message = messages.ErrValidationFailed.Error()
 		ctx.JSON(messages.Response(http.StatusUnprocessableEntity, R))
